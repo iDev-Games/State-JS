@@ -1,4 +1,4 @@
-/* State.js v1.0.3 by iDev Games */
+/* State.js v1.0.4 by iDev Games */
 class State
 {
     states = [];
@@ -205,8 +205,15 @@ class State
         const targetElement = document.getElementById(targetIds[0]);
 
         if (targetElement) {
-            if (this.evaluateCondition(condition, targetElement)) {
+            const conditionMet = this.evaluateCondition(condition, targetElement);
+            const wasDisabled = triggerElement.classList.contains('state-disabled');
+
+            if (conditionMet) {
                 triggerElement.classList.remove('state-disabled');
+                const autofire = triggerElement.getAttribute('data-state-autofire') === 'true';
+                if (autofire && wasDisabled) {
+                    triggerElement.click();
+                }
             } else {
                 triggerElement.classList.add('state-disabled');
             }

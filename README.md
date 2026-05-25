@@ -284,6 +284,58 @@ Use `data-state-trigger-chain` to perform multiple operations sequentially (perf
 </button>
 ```
 
+**Auto-firing Triggers:**
+
+Use `data-state-autofire="true"` to automatically fire a trigger whenever its condition becomes true (perfect for passive income, auto-unlocks, achievements, and automatic progression):
+
+```html
+<!-- Passive income: auto-collect gold whenever it reaches 10 -->
+<button id="autoCollect"
+        data-state
+        data-state-trigger
+        data-state-bind="player"
+        data-state-attr="gold"
+        data-state-decrement="10"
+        data-state-condition="gold >= 10"
+        data-state-autofire="true"
+        data-state-trigger-chain="addScore"
+        style="display:none">
+</button>
+
+<button id="addScore"
+        data-state
+        data-state-trigger
+        data-state-bind="player"
+        data-state-attr="score"
+        data-state-increment="10"
+        style="display:none">
+</button>
+
+<!-- Auto-unlock: automatically upgrade when level reaches 5 -->
+<button data-state
+        data-state-trigger
+        data-state-bind="player"
+        data-state-attr="upgraded"
+        data-state-set="true"
+        data-state-condition="level >= 5"
+        data-state-autofire="true"
+        style="display:none">
+</button>
+
+<!-- Achievement system: auto-trigger when condition met -->
+<button data-state
+        data-state-trigger
+        data-state-bind="achievements"
+        data-state-attr="firstWin"
+        data-state-set="true"
+        data-state-condition="wins >= 1"
+        data-state-autofire="true"
+        style="display:none">
+</button>
+```
+
+The magic: When the condition transitions from `false` → `true`, the trigger fires automatically! No click required. No visibility required. **This is the missing primitive for automatic game mechanics.**
+
 **Works with any element:**
 
 ```html
@@ -356,6 +408,7 @@ When using `data-state-watch="health,score,level"`:
 | `data-state-trigger` | Make element clickable to trigger state changes | `data-state-trigger` |
 | `data-state-trigger-chain="id1,id2"` | Click other triggers sequentially after this one | `data-state-trigger-chain="payCost,addLevel"` |
 | `data-state-condition="expression"` | Only execute if condition is true (adds `state-disabled` class when false) | `data-state-condition="score >= 20"` or `"gold >= 100 and level < 10"` |
+| `data-state-autofire="true"` | Automatically fire trigger when condition becomes true (requires `data-state-condition`) | `data-state-autofire="true"` |
 | `data-state-toggle="attrName"` | Toggle boolean attribute on/off when clicked | `data-state-toggle="powered"` |
 | `data-state-display="attrName"` | Auto-display attribute value as text | `data-state-display="health"` |
 | `data-state-toggles="attr1,attr2"` | Boolean state toggles | `data-state-toggles="active,locked"` |
