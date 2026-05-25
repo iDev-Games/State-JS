@@ -192,6 +192,25 @@ document.getElementById('player').setAttribute('data-health', '75');
 - **Increment:** `data-state-attr="attribute"` + `data-state-increment="amount"` - Adds to current value
 - **Decrement:** `data-state-attr="attribute"` + `data-state-decrement="amount"` - Subtracts from current value
 
+**Advanced: Dynamic Calculations**
+
+Both increment and decrement support `calc()` expressions with CSS variables:
+
+```html
+<!-- Static increment -->
+<button data-state-increment="10">Add 10</button>
+
+<!-- Dynamic: increment scales with level -->
+<button data-state-increment="calc(var(--state-level) * 5)">
+    Level-scaled Click
+</button>
+
+<!-- Dynamic: cost increases with score -->
+<button data-state-increment="calc(1 + var(--state-score) * 0.1)">
+    Increasing Returns
+</button>
+```
+
 **Both increment and decrement automatically respect `data-[attr]-min` and `data-[attr]-max` bounds!**
 
 **Works with any element:**
@@ -261,8 +280,8 @@ When using `data-state-watch="health,score,level"`:
 | `data-state-bind="id1,id2"` | Auto-bind input to element IDs | `data-state-bind="player,enemy"` |
 | `data-state-attr="attrName"` | Which attribute to update when binding | `data-state-attr="health"` |
 | `data-state-value="value"` | Value to set when trigger is clicked | `data-state-value="100"` |
-| `data-state-increment="amount"` | Amount to add when trigger is clicked (respects min/max) | `data-state-increment="10"` |
-| `data-state-decrement="amount"` | Amount to subtract when trigger is clicked (respects min/max) | `data-state-decrement="5"` |
+| `data-state-increment="amount"` | Amount to add when trigger is clicked (supports calc(), respects min/max) | `data-state-increment="10"` or `calc(var(--state-level) * 5)` |
+| `data-state-decrement="amount"` | Amount to subtract when trigger is clicked (supports calc(), respects min/max) | `data-state-decrement="5"` or `calc(var(--state-cost))` |
 | `data-state-trigger` | Make element clickable to trigger state changes | `data-state-trigger` |
 | `data-state-toggle="attrName"` | Toggle boolean attribute on/off when clicked | `data-state-toggle="powered"` |
 | `data-state-display="attrName"` | Auto-display attribute value as text | `data-state-display="health"` |
@@ -481,6 +500,66 @@ State.js includes **state-animations.css** - a companion stylesheet with predefi
 </div>
 ```
 
+### Idle Game with Dynamic Scaling (No JavaScript!)
+
+```html
+<div id="idleGame"
+     data-state
+     data-state-watch="gold,level,clickPower"
+     data-state-var="true"
+     data-gold="0"
+     data-level="1"
+     data-clickPower="1">
+
+    <h1>Gold: <span data-state-display="gold">0</span></h1>
+    <h2>Level: <span data-state-display="level">1</span></h2>
+    <p>Click Power: <span data-state-display="clickPower">1</span></p>
+
+    <!-- Basic click: adds clickPower to gold -->
+    <button data-state
+            data-state-trigger
+            data-state-bind="idleGame"
+            data-state-attr="gold"
+            data-state-increment="calc(var(--state-clickPower))">
+        Mine Gold
+    </button>
+
+    <!-- Upgrade: increases clickPower, costs gold -->
+    <button data-state
+            data-state-trigger
+            data-state-bind="idleGame"
+            data-state-attr="clickPower"
+            data-state-increment="1">
+        Upgrade Pick (+1 power)
+    </button>
+
+    <!-- Level up: costs increase with level -->
+    <button data-state
+            data-state-trigger
+            data-state-bind="idleGame"
+            data-state-attr="level"
+            data-state-increment="1">
+        Level Up
+    </button>
+</div>
+
+<style>
+/* Different animations per level */
+#idleGame[data-level="5"],
+#idleGame[data-level="10"] {
+    animation: level-milestone 1s ease-out;
+}
+
+/* Click power visualization */
+#idleGame::after {
+    content: "";
+    width: calc(var(--state-clickPower) * 10px);
+    height: 5px;
+    background: gold;
+}
+</style>
+```
+
 ---
 
 ## Integration with Other Libraries
@@ -638,6 +717,13 @@ Give a ⭐️ if this project helped you!
 ---
 
 ## Changelog
+
+### v1.0.1
+- Added `data-state-increment` - Increment values without JavaScript
+- Added `data-state-decrement` - Decrement values without JavaScript
+- Added `calc()` support - Dynamic calculations using CSS variables in increment/decrement
+- Auto-clamping - Min/max bounds automatically respected
+- Enables idle/clicker games, scaling mechanics, and dynamic UI with zero JavaScript
 
 ### v1.0.0
 - Initial release

@@ -1,4 +1,4 @@
-/* State.js v1.0.1 by iDev Games */
+/* State.js v1.0.2 by iDev Games */
 class State
 {
     states = [];
@@ -210,7 +210,31 @@ class State
             } else if (attrName && incrementValue !== null) {
                 // Increment mode: add incrementValue to current value (with optional min/max)
                 const currentValue = parseFloat(targetElement.getAttribute(`data-${attrName}`) || '0');
-                const increment = parseFloat(incrementValue);
+
+                // Evaluate increment value (supports calc() with CSS variables)
+                let increment;
+                if (incrementValue.includes('calc(')) {
+                    // Create temporary element to evaluate calc() expression
+                    const tempEl = document.createElement('div');
+                    tempEl.style.setProperty('--state-current', currentValue);
+
+                    // Copy all CSS variables from target element to temp element
+                    const computedStyle = window.getComputedStyle(targetElement);
+                    for (let i = 0; i < computedStyle.length; i++) {
+                        const prop = computedStyle[i];
+                        if (prop.startsWith('--state-')) {
+                            tempEl.style.setProperty(prop, computedStyle.getPropertyValue(prop));
+                        }
+                    }
+
+                    tempEl.style.width = incrementValue;
+                    document.body.appendChild(tempEl);
+                    increment = parseFloat(window.getComputedStyle(tempEl).width) || 0;
+                    document.body.removeChild(tempEl);
+                } else {
+                    increment = parseFloat(incrementValue);
+                }
+
                 let newValue = currentValue + increment;
 
                 // Apply min/max clamping if specified
@@ -234,7 +258,31 @@ class State
             } else if (attrName && decrementValue !== null) {
                 // Decrement mode: subtract decrementValue from current value (with optional min/max)
                 const currentValue = parseFloat(targetElement.getAttribute(`data-${attrName}`) || '0');
-                const decrement = parseFloat(decrementValue);
+
+                // Evaluate decrement value (supports calc() with CSS variables)
+                let decrement;
+                if (decrementValue.includes('calc(')) {
+                    // Create temporary element to evaluate calc() expression
+                    const tempEl = document.createElement('div');
+                    tempEl.style.setProperty('--state-current', currentValue);
+
+                    // Copy all CSS variables from target element to temp element
+                    const computedStyle = window.getComputedStyle(targetElement);
+                    for (let i = 0; i < computedStyle.length; i++) {
+                        const prop = computedStyle[i];
+                        if (prop.startsWith('--state-')) {
+                            tempEl.style.setProperty(prop, computedStyle.getPropertyValue(prop));
+                        }
+                    }
+
+                    tempEl.style.width = decrementValue;
+                    document.body.appendChild(tempEl);
+                    decrement = parseFloat(window.getComputedStyle(tempEl).width) || 0;
+                    document.body.removeChild(tempEl);
+                } else {
+                    decrement = parseFloat(decrementValue);
+                }
+
                 let newValue = currentValue - decrement;
 
                 // Apply min/max clamping if specified
