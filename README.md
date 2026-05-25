@@ -346,6 +346,452 @@ The magic: When the condition transitions from `false` → `true`, the trigger f
 
 ---
 
+## New in v1.1.0: Seven Game Development Extensions
+
+State.js v1.1.0 adds seven powerful declarative primitives specifically designed for game development and interactive experiences. Build complete games with **zero hand-written JavaScript logic**.
+
+### 1. data-state-interval — Repeating Timer Triggers
+
+Automatically fire triggers at regular intervals (perfect for passive income, cooldowns, game ticks):
+
+```html
+<!-- Passive gold income: +1 gold every second -->
+<button id="passiveGold"
+        data-state
+        data-state-trigger
+        data-state-bind="player"
+        data-state-attr="gold"
+        data-state-increment="1"
+        data-state-interval="1000"
+        style="display:none">
+</button>
+
+<!-- Health regeneration: +5 HP every 2 seconds (only if alive) -->
+<button data-state
+        data-state-trigger
+        data-state-bind="player"
+        data-state-attr="health"
+        data-state-increment="5"
+        data-state-interval="2000"
+        data-state-condition="health > 0 and health < 100"
+        style="display:none">
+</button>
+```
+
+**How it works:**
+- Fires the trigger automatically every N milliseconds
+- Respects `data-state-condition` (won't fire if condition is false)
+- Uses a single efficient shared scheduler for all interval triggers
+- Perfect for idle games, passive effects, and time-based mechanics
+
+### 2. data-state-set — Set Exact Value
+
+Set an attribute to an exact value (unlike increment/decrement). Supports `calc()` expressions:
+
+```html
+<!-- Reset health to full -->
+<button data-state
+        data-state-trigger
+        data-state-bind="player"
+        data-state-attr="health"
+        data-state-set="100">
+    Full Heal
+</button>
+
+<!-- Set mana to half of max -->
+<button data-state
+        data-state-trigger
+        data-state-bind="player"
+        data-state-attr="mana"
+        data-state-set="calc(var(--state-manamax) / 2)">
+    Restore 50% Mana
+</button>
+
+<!-- Level-scaled restore -->
+<button data-state
+        data-state-trigger
+        data-state-bind="player"
+        data-state-attr="gold"
+        data-state-set="calc(var(--state-level) * 100)">
+    Set Gold to Level × 100
+</button>
+```
+
+**Use cases:**
+- Reset/restore mechanics
+- Level-scaled rewards
+- Percentage-based calculations
+- Achievement unlocks (set boolean flags)
+
+### 3. data-state-text — Template String Interpolation
+
+Display dynamic text using {token} syntax that updates automatically:
+
+```html
+<div id="player"
+     data-state
+     data-state-watch="level,health,healthmax,gold"
+     data-level="1"
+     data-health="100"
+     data-healthmax="100"
+     data-gold="0">
+</div>
+
+<!-- Text updates automatically when attributes change -->
+<h1 data-state
+    data-state-bind="player"
+    data-state-text="Level {level} Hero">
+</h1>
+
+<p data-state
+   data-state-bind="player"
+   data-state-text="HP: {health}/{healthmax}">
+</p>
+
+<div data-state
+     data-state-bind="player"
+     data-state-text="Gold: {gold} | Level: {level}">
+</div>
+
+<!-- Works with any attribute -->
+<span data-state
+      data-state-bind="player"
+      data-state-text="You have {gold} gold coins!">
+</span>
+```
+
+**How it works:**
+- Replaces `{attributeName}` tokens with current attribute values
+- Updates automatically when any referenced attribute changes
+- Supports multiple tokens in one template
+- No manual display element management required
+
+### 4. data-state-class — Conditional CSS Classes
+
+Dynamically add/remove CSS classes based on conditions:
+
+```html
+<!-- Add 'critical' class when health is low -->
+<div id="healthBar"
+     data-state
+     data-state-bind="player"
+     data-state-class="critical"
+     data-state-class-condition="health <= 20">
+</div>
+
+<!-- Multiple conditional classes using numbered suffixes -->
+<div id="player"
+     data-state
+     data-state-bind="game"
+     data-state-class="low-health"
+     data-state-class-condition="health <= 30"
+     data-state-class-2="powered-up"
+     data-state-class-condition-2="powerup == true"
+     data-state-class-3="max-level"
+     data-state-class-condition-3="level >= 99">
+</div>
+
+<!-- Style the classes in CSS -->
+<style>
+.critical {
+    animation: critical-pulse 0.5s infinite;
+    border: 3px solid red;
+}
+
+.low-health {
+    filter: hue-rotate(180deg);
+}
+
+.powered-up {
+    box-shadow: 0 0 20px gold;
+    animation: glow 1s infinite;
+}
+
+.max-level {
+    background: linear-gradient(45deg, gold, orange);
+}
+</style>
+```
+
+**Features:**
+- Supports up to 10 class/condition pairs per element (use `-2`, `-3`, etc.)
+- Classes add/remove automatically when conditions change
+- Perfect for visual state feedback
+- Works with any CSS animations or effects
+
+### 5. data-state-sound — Procedural Sound Effects
+
+Play procedurally generated Web Audio sounds on trigger clicks (no audio files needed!):
+
+```html
+<!-- Built-in sounds: click, levelup, buy, error, coin -->
+<button data-state
+        data-state-trigger
+        data-state-bind="player"
+        data-state-attr="score"
+        data-state-increment="1"
+        data-state-sound="click">
+    Click (+1 score)
+</button>
+
+<button data-state
+        data-state-trigger
+        data-state-bind="player"
+        data-state-attr="level"
+        data-state-increment="1"
+        data-state-sound="levelup"
+        data-state-condition="xp >= 100">
+    Level Up!
+</button>
+
+<button data-state
+        data-state-trigger
+        data-state-bind="shop"
+        data-state-attr="gold"
+        data-state-decrement="50"
+        data-state-sound="buy"
+        data-state-condition="gold >= 50">
+    Buy Item (50g)
+</button>
+
+<!-- Error sound when clicking disabled buttons -->
+<button data-state
+        data-state-trigger
+        data-state-sound="error"
+        data-state-condition="gold >= 1000">
+    Expensive Item (1000g)
+</button>
+
+<!-- Coin pickup sound -->
+<button data-state
+        data-state-trigger
+        data-state-bind="player"
+        data-state-attr="gold"
+        data-state-increment="10"
+        data-state-sound="coin">
+    Collect Gold
+</button>
+```
+
+**Built-in sounds:**
+- **click** - 80ms sawtooth beep (UI feedback)
+- **levelup** - 3-note arpeggio C4→E4→G4 (achievements)
+- **buy** - 100ms sine tone at 600Hz (purchases)
+- **error** - 80ms square wave at 120Hz (failures)
+- **coin** - Rising pitch 880→1200Hz (pickups)
+
+**Features:**
+- Zero external dependencies (uses Web Audio API)
+- Procedurally generated (no audio files to load)
+- Plays on trigger click before executing the action
+- Respects browser autoplay policies
+
+### 6. data-state-persist — localStorage Save/Restore
+
+Automatically save and restore state to localStorage:
+
+```html
+<div id="gameState"
+     data-state
+     data-state-watch="level,gold,health,xp"
+     data-state-persist="true"
+     data-state-persist-key="my-game-save"
+     data-level="1"
+     data-gold="0"
+     data-health="100"
+     data-xp="0">
+</div>
+```
+
+**How it works:**
+- Automatically loads saved state on page load
+- Saves changes to localStorage with 500ms debounce (prevents excessive writes)
+- Saves all attributes listed in `data-state-watch`
+- Uses element ID as save key if `data-state-persist-key` not specified
+- Perfect for idle games, progress persistence, user preferences
+
+**Clear saved data:**
+```javascript
+// From browser console or your own JS:
+localStorage.removeItem('my-game-save');
+```
+
+### 7. data-state-event — CustomEvent Dispatch
+
+Dispatch CustomEvents when triggers fire (perfect for external integrations, analytics, achievements):
+
+```html
+<!-- Dispatch event when score increases -->
+<button data-state
+        data-state-trigger
+        data-state-bind="player"
+        data-state-attr="score"
+        data-state-increment="10"
+        data-state-event="score-increased">
+    +10 Score
+</button>
+
+<!-- Listen to events in JavaScript -->
+<script>
+document.addEventListener('state:score-increased', (e) => {
+    console.log('Score changed!', e.detail);
+    // e.detail contains:
+    // {
+    //   element: <the trigger button>,
+    //   attr: "score",
+    //   oldValue: "0",
+    //   newValue: "10",
+    //   boundId: "player"
+    // }
+});
+
+// Track level-ups
+document.addEventListener('state:level-up', (e) => {
+    // Send to analytics
+    gtag('event', 'level_up', { level: e.detail.newValue });
+});
+
+// Achievement tracking
+document.addEventListener('state:achievement-unlocked', (e) => {
+    showNotification(`Achievement unlocked: ${e.detail.attr}!`);
+});
+</script>
+```
+
+**Use cases:**
+- Analytics integration
+- Achievement systems
+- External UI updates
+- Debug logging
+- Third-party integrations
+
+**Event naming:**
+- Event name is prefixed with `state:` (e.g., `data-state-event="win"` → `state:win`)
+- Events bubble up the DOM
+- Not cancelable (fire-and-forget)
+
+---
+
+## Complete Game Example (Zero JavaScript Logic)
+
+Combining all extensions, here's a complete idle clicker game:
+
+```html
+<div id="game"
+     data-state
+     data-state-watch="gold,goldPerClick,goldPerSecond,level"
+     data-state-persist="true"
+     data-state-persist-key="idle-game-v1"
+     data-gold="0"
+     data-goldPerClick="1"
+     data-goldPerSecond="0"
+     data-level="1">
+
+    <!-- Display with template interpolation -->
+    <h1 data-state
+        data-state-bind="game"
+        data-state-text="Level {level} Miner">
+    </h1>
+
+    <p data-state
+       data-state-bind="game"
+       data-state-text="Gold: {gold} | Per Click: {goldPerClick} | Per Second: {goldPerSecond}">
+    </p>
+
+    <!-- Manual clicking -->
+    <button data-state
+            data-state-trigger
+            data-state-bind="game"
+            data-state-attr="gold"
+            data-state-increment="calc(var(--state-goldPerClick))"
+            data-state-sound="coin"
+            data-state-event="gold-mined">
+        Mine Gold
+    </button>
+
+    <!-- Upgrades with conditional classes -->
+    <button id="upgradeClick"
+            data-state
+            data-state-trigger
+            data-state-bind="game"
+            data-state-trigger-chain="payUpgrade,addPower"
+            data-state-condition="gold >= 50"
+            data-state-sound="buy"
+            data-state-class="affordable"
+            data-state-class-condition="gold >= 50">
+        Upgrade Pickaxe (50g)
+    </button>
+
+    <!-- Hidden triggers for upgrade chain -->
+    <button id="payUpgrade"
+            data-state-trigger
+            data-state-bind="game"
+            data-state-attr="gold"
+            data-state-decrement="50"
+            style="display:none">
+    </button>
+
+    <button id="addPower"
+            data-state-trigger
+            data-state-bind="game"
+            data-state-attr="goldPerClick"
+            data-state-increment="1"
+            style="display:none">
+    </button>
+
+    <!-- Passive income with intervals -->
+    <button data-state
+            data-state-trigger
+            data-state-bind="game"
+            data-state-attr="gold"
+            data-state-increment="calc(var(--state-goldPerSecond))"
+            data-state-interval="1000"
+            data-state-condition="goldPerSecond > 0"
+            style="display:none">
+    </button>
+
+    <!-- Auto-level-up when gold reaches threshold -->
+    <button data-state
+            data-state-trigger
+            data-state-bind="game"
+            data-state-attr="level"
+            data-state-increment="1"
+            data-state-condition="gold >= 500"
+            data-state-autofire="true"
+            data-state-sound="levelup"
+            data-state-event="level-up"
+            style="display:none">
+    </button>
+</div>
+
+<style>
+/* Visual feedback with conditional classes */
+.affordable {
+    background: gold;
+    animation: pulse 0.5s infinite;
+}
+
+#game[data-level="10"],
+#game[data-level="25"],
+#game[data-level="50"] {
+    animation: milestone-celebration 1s ease-out;
+}
+</style>
+```
+
+**This game has:**
+- ✅ Manual clicking with dynamic rewards
+- ✅ Upgrade system with costs
+- ✅ Passive income ticking every second
+- ✅ Auto-level-up when reaching milestones
+- ✅ Sound effects for all actions
+- ✅ Visual feedback for affordability
+- ✅ Persistent save/load with localStorage
+- ✅ Event dispatch for analytics/achievements
+- ✅ **ZERO hand-written game logic JavaScript!**
+
+---
+
 ## CSS Variables Created
 
 State.js automatically creates CSS variables based on your configuration:
@@ -411,6 +857,16 @@ When using `data-state-watch="health,score,level"`:
 | `data-state-autofire="true"` | Automatically fire trigger when condition becomes true (requires `data-state-condition`) | `data-state-autofire="true"` |
 | `data-state-toggle="attrName"` | Toggle boolean attribute on/off when clicked | `data-state-toggle="powered"` |
 | `data-state-display="attrName"` | Auto-display attribute value as text | `data-state-display="health"` |
+| **NEW v1.1.0** | **Game Development Extensions** | |
+| `data-state-interval="ms"` | Auto-fire trigger every N milliseconds (respects conditions) | `data-state-interval="1000"` |
+| `data-state-set="value"` | Set attribute to exact value (supports calc()) | `data-state-set="100"` or `calc(var(--state-max))` |
+| `data-state-text="template"` | Template string with {token} interpolation | `data-state-text="HP {health}/{healthmax}"` |
+| `data-state-class="className"` | Conditional CSS class application | `data-state-class="critical"` |
+| `data-state-class-condition="expr"` | Condition for class (use with data-state-class) | `data-state-class-condition="health <= 20"` |
+| `data-state-sound="soundName"` | Play Web Audio sound on trigger (click, levelup, buy, error, coin) | `data-state-sound="coin"` |
+| `data-state-persist="true"` | Auto-save/restore to localStorage | `data-state-persist="true"` |
+| `data-state-persist-key="key"` | localStorage key (optional, defaults to element ID) | `data-state-persist-key="my-game"` |
+| `data-state-event="eventName"` | Dispatch CustomEvent as "state:eventName" | `data-state-event="score-up"` |
 | `data-state-toggles="attr1,attr2"` | Boolean state toggles | `data-state-toggles="active,locked"` |
 | `data-state-dimensions="true"` | Track width/height | `data-state-dimensions="true"` |
 | `data-state-media="true"` | Track media playback | `data-state-media="true"` |

@@ -1,4 +1,4 @@
-/* State.js v1.0.5 by iDev Games */
+/* State.js v1.1.0 by iDev Games */
 class State
 {
     states = [];
@@ -18,6 +18,11 @@ class State
     }
 
     evaluateCalc(calcExpression, sourceElement) {
+        let expr = calcExpression.trim();
+        if (expr.startsWith('calc(') && expr.endsWith(')')) {
+            expr = expr.slice(5, -1); // Remove "calc(" and ")"
+        }
+
         const tempEl = document.createElement('div');
         tempEl.style.position = 'absolute';
         tempEl.style.visibility = 'hidden';
@@ -29,7 +34,7 @@ class State
             }
         }
 
-        tempEl.style.width = `calc((${calcExpression}) * 1px)`;
+        tempEl.style.width = `calc((${expr}) * 1px)`;
         document.body.appendChild(tempEl);
         const result = parseFloat(window.getComputedStyle(tempEl).width) || 0;
         document.body.removeChild(tempEl);
@@ -84,6 +89,18 @@ class State
         }
         if (element.hasAttribute('data-state-trigger')) {
             this.setupTriggerElement(element);
+        }
+        if (element.hasAttribute('data-state-interval')) {
+            this.setupIntervalTrigger(element);
+        }
+        if (element.hasAttribute('data-state-text')) {
+            this.setupTextElement(element);
+        }
+        if (element.hasAttribute('data-state-class')) {
+            this.setupClassElement(element);
+        }
+        if (element.hasAttribute('data-state-persist')) {
+            this.setupPersist(element);
         }
         this.updateElement(element);
     }
@@ -233,11 +250,17 @@ class State
     }
 
     handleTriggerClick(triggerElement, bindAttr) {
+        const soundName = triggerElement.getAttribute('data-state-sound');
+        if (soundName) {
+            this.playSound(soundName);
+        }
+
         const attrName = triggerElement.getAttribute('data-state-attr');
         const attrValue = triggerElement.getAttribute('data-state-value');
         const toggleAttr = triggerElement.getAttribute('data-state-toggle');
         const incrementValue = triggerElement.getAttribute('data-state-increment');
         const decrementValue = triggerElement.getAttribute('data-state-decrement');
+        const setValue = triggerElement.getAttribute('data-state-set');
         const chainTriggers = triggerElement.getAttribute('data-state-trigger-chain');
         const condition = triggerElement.getAttribute('data-state-condition');
         if (condition && bindAttr) {
@@ -260,16 +283,16 @@ class State
                 if (!targetElement) return;
 
                 if (toggleAttr) {
-                const currentValue = targetElement.getAttribute(`data-${toggleAttr}`);
-                const newValue = currentValue === 'true' ? 'false' : 'true';
+                const oldValue = targetElement.getAttribute(`data-${toggleAttr}`);
+                const newValue = oldValue === 'true' ? 'false' : 'true';
                 targetElement.setAttribute(`data-${toggleAttr}`, newValue);
+                this.dispatchStateEvent(triggerElement, bindAttr, toggleAttr, oldValue, newValue);
             } else if (attrName && incrementValue !== null) {
-                // NUMERIC COERCION PATCH: Ensure current value is treated as number
                 let currentAttr = targetElement.getAttribute(`data-${attrName}`) || '0';
                 const currentValue = parseFloat(currentAttr);
                 if (isNaN(currentValue)) {
                     console.warn(`State.js: Attribute data-${attrName} is not numeric:`, currentAttr);
-                    return; // Skip if not a valid number
+                    return;
                 }
                 let increment;
                 if (incrementValue.includes('calc(')) {
@@ -277,10 +300,9 @@ class State
                 } else {
                     increment = parseFloat(incrementValue);
                 }
-                // NUMERIC COERCION PATCH: Validate increment is a valid number
                 if (isNaN(increment)) {
                     console.warn(`State.js: Increment value is not numeric:`, incrementValue);
-                    return; // Skip if not a valid number
+                    return;
                 }
 
                 let newValue = currentValue + increment;
@@ -293,7 +315,9 @@ class State
                     newValue = Math.min(parseFloat(maxValue), newValue);
                 }
 
+                const oldValue = currentAttr;
                 targetElement.setAttribute(`data-${attrName}`, String(newValue));
+                this.dispatchStateEvent(triggerElement, bindAttr, attrName, oldValue, String(newValue));
                 const displayElement = targetElement.querySelector(`[data-state-display="${attrName}"]`) ||
                                      document.getElementById(`${targetId}-${attrName}`);
                 if (displayElement) {
@@ -301,12 +325,11 @@ class State
                 }
                 this.updateConditionalTriggers(targetId);
             } else if (attrName && decrementValue !== null) {
-                // NUMERIC COERCION PATCH: Ensure current value is treated as number
                 let currentAttr = targetElement.getAttribute(`data-${attrName}`) || '0';
                 const currentValue = parseFloat(currentAttr);
                 if (isNaN(currentValue)) {
                     console.warn(`State.js: Attribute data-${attrName} is not numeric:`, currentAttr);
-                    return; // Skip if not a valid number
+                    return;
                 }
                 let decrement;
                 if (decrementValue.includes('calc(')) {
@@ -314,10 +337,9 @@ class State
                 } else {
                     decrement = parseFloat(decrementValue);
                 }
-                // NUMERIC COERCION PATCH: Validate decrement is a valid number
                 if (isNaN(decrement)) {
                     console.warn(`State.js: Decrement value is not numeric:`, decrementValue);
-                    return; // Skip if not a valid number
+                    return;
                 }
 
                 let newValue = currentValue - decrement;
@@ -330,11 +352,30 @@ class State
                     newValue = Math.min(parseFloat(maxValue), newValue);
                 }
 
+                const oldValue = currentAttr;
                 targetElement.setAttribute(`data-${attrName}`, String(newValue));
+                this.dispatchStateEvent(triggerElement, bindAttr, attrName, oldValue, String(newValue));
                 const displayElement = targetElement.querySelector(`[data-state-display="${attrName}"]`) ||
                                      document.getElementById(`${targetId}-${attrName}`);
                 if (displayElement) {
                     displayElement.textContent = String(newValue);
+                }
+                this.updateConditionalTriggers(targetId);
+            } else if (attrName && setValue !== null) {
+                let finalValue;
+                if (setValue.includes('calc(')) {
+                    finalValue = String(this.evaluateCalc(setValue, targetElement));
+                } else {
+                    finalValue = setValue;
+                }
+
+                const oldValue = targetElement.getAttribute(`data-${attrName}`) || '';
+                targetElement.setAttribute(`data-${attrName}`, finalValue);
+                this.dispatchStateEvent(triggerElement, bindAttr, attrName, oldValue, finalValue);
+                const displayElement = targetElement.querySelector(`[data-state-display="${attrName}"]`) ||
+                                     document.getElementById(`${targetId}-${attrName}`);
+                if (displayElement) {
+                    displayElement.textContent = finalValue;
                 }
                 this.updateConditionalTriggers(targetId);
             } else if (attrName && attrValue !== null) {
@@ -345,7 +386,9 @@ class State
                     finalValue = attrValue;
                 }
 
+                const oldValue = targetElement.getAttribute(`data-${attrName}`) || '';
                 targetElement.setAttribute(`data-${attrName}`, finalValue);
+                this.dispatchStateEvent(triggerElement, bindAttr, attrName, oldValue, finalValue);
                 const displayElement = targetElement.querySelector(`[data-state-display="${attrName}"]`) ||
                                      document.getElementById(`${targetId}-${attrName}`);
                 if (displayElement) {
@@ -495,11 +538,9 @@ class State
             let value = element.getAttribute(`data-${attr.toLowerCase()}`);
 
             if (value !== null) {
-                // NUMERIC COERCION PATCH: Force numeric strings to become real numbers
-                // This prevents NaN errors in idle/clicker games when doing math with CSS variables
                 const numValue = parseFloat(value);
                 if (!isNaN(numValue)) {
-                    value = numValue; // Coerce to number type
+                    value = numValue;
                 }
                 styleTarget.setProperty(`--state-${attr}${idSuffix}`, isNaN(numValue) ? value : numValue);
                 if (!isNaN(numValue)) {
@@ -618,6 +659,368 @@ class State
 
     updateBodyState(element) {
         element.classList.add('state-ready');
+    }
+    intervalTriggers = new Map();
+    intervalScheduler = null;
+
+    setupIntervalTrigger(element) {
+        const interval = element.getAttribute('data-state-interval');
+        if (!interval) return;
+
+        const ms = parseFloat(interval);
+        if (isNaN(ms) || ms <= 0) {
+            console.warn('State.js: Invalid interval value:', interval);
+            return;
+        }
+
+        this.intervalTriggers.set(element, {
+            interval: ms,
+            lastFire: performance.now(),
+            element: element
+        });
+
+        if (!this.intervalScheduler) {
+            this.intervalScheduler = setInterval(() => {
+                const now = performance.now();
+                this.intervalTriggers.forEach((data, el) => {
+                    if (now - data.lastFire >= data.interval) {
+                        const condition = el.getAttribute('data-state-condition');
+                        const bindAttr = el.getAttribute('data-state-bind');
+
+                        let shouldFire = true;
+                        if (condition && bindAttr) {
+                            const targetIds = bindAttr.split(',').map(id => id.trim());
+                            const targetElement = document.getElementById(targetIds[0]);
+                            if (targetElement) {
+                                shouldFire = this.evaluateCondition(condition, targetElement);
+                            }
+                        }
+
+                        if (shouldFire) {
+                            el.click();
+                        }
+                        data.lastFire = now;
+                    }
+                });
+            }, 16);
+        }
+    }
+    textElements = new Map();
+
+    setupTextElement(element) {
+        const template = element.getAttribute('data-state-text');
+        const bindAttr = element.getAttribute('data-state-bind');
+        if (!template || !bindAttr) return;
+
+        const targetIds = bindAttr.split(',').map(id => id.trim());
+        const targetElement = document.getElementById(targetIds[0]);
+        if (!targetElement) return;
+
+        this.textElements.set(element, {
+            template: template,
+            targetElement: targetElement
+        });
+
+        this.updateTextElement(element);
+        const textObserver = new MutationObserver(() => {
+            this.textElements.forEach((data, el) => {
+                if (data.targetElement === targetElement) {
+                    this.updateTextElement(el);
+                }
+            });
+        });
+        const watchAttr = targetElement.getAttribute('data-state-watch');
+        const attributeFilter = watchAttr ?
+            watchAttr.split(',').map(a => `data-${a.trim()}`) :
+            null;
+
+        if (attributeFilter) {
+            textObserver.observe(targetElement, { attributes: true, attributeFilter: attributeFilter });
+        } else {
+            textObserver.observe(targetElement, { attributes: true });
+        }
+    }
+
+    updateTextElement(element) {
+        const data = this.textElements.get(element);
+        if (!data) return;
+
+        let text = data.template;
+        const tokens = text.match(/\{([a-zA-Z][\w-]*)\}/g);
+        if (tokens) {
+            tokens.forEach(token => {
+                const attr = token.slice(1, -1).toLowerCase();
+                const value = data.targetElement.getAttribute(`data-${attr}`) || '';
+                text = text.replace(token, value);
+            });
+        }
+        element.textContent = text;
+    }
+    classElements = new Map();
+
+    setupClassElement(element) {
+        const bindAttr = element.getAttribute('data-state-bind');
+        if (!bindAttr) return;
+
+        const targetIds = bindAttr.split(',').map(id => id.trim());
+        const targetElement = document.getElementById(targetIds[0]);
+        if (!targetElement) return;
+
+        const classes = [];
+        for (let i = 1; i <= 10; i++) {
+            const suffix = i === 1 ? '' : `-${i}`;
+            const className = element.getAttribute(`data-state-class${suffix}`);
+            const condition = element.getAttribute(`data-state-class-condition${suffix}`);
+            if (className && condition) {
+                classes.push({ className, condition });
+            }
+        }
+
+        if (classes.length === 0) return;
+
+        this.classElements.set(element, {
+            classes: classes,
+            targetElement: targetElement
+        });
+
+        this.updateClassElement(element);
+        const classObserver = new MutationObserver(() => {
+            this.classElements.forEach((data, el) => {
+                if (data.targetElement === targetElement) {
+                    this.updateClassElement(el);
+                }
+            });
+        });
+        const watchAttr = targetElement.getAttribute('data-state-watch');
+        const attributeFilter = watchAttr ?
+            watchAttr.split(',').map(a => `data-${a.trim()}`) :
+            null;
+
+        if (attributeFilter) {
+            classObserver.observe(targetElement, { attributes: true, attributeFilter: attributeFilter });
+        } else {
+            classObserver.observe(targetElement, { attributes: true });
+        }
+    }
+
+    updateClassElement(element) {
+        const data = this.classElements.get(element);
+        if (!data) return;
+
+        data.classes.forEach(({ className, condition }) => {
+            const result = this.evaluateCondition(condition, data.targetElement);
+            if (result) {
+                element.classList.add(className);
+            } else {
+                element.classList.remove(className);
+            }
+        });
+    }
+    audioContext = null;
+    soundBuffers = {};
+
+    initAudioContext() {
+        if (this.audioContext) return;
+        try {
+            const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+            this.audioContext = new AudioContextClass();
+        } catch (e) {
+            console.warn('State.js: Web Audio API not supported');
+        }
+    }
+
+    playSound(soundName) {
+        if (!soundName) return;
+
+        if (!this.audioContext) {
+            this.initAudioContext();
+            if (!this.audioContext) return;
+        }
+
+        if (this.audioContext.state === 'suspended') {
+            this.audioContext.resume();
+        }
+
+        const ctx = this.audioContext;
+        const now = ctx.currentTime;
+
+        switch(soundName.toLowerCase()) {
+            case 'click': {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.type = 'sawtooth';
+                osc.frequency.value = 440;
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+                osc.start(now);
+                osc.stop(now + 0.08);
+                break;
+            }
+            case 'levelup': {
+                [261.63, 329.63, 392.00].forEach((freq, i) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.type = 'sine';
+                    osc.frequency.value = freq;
+                    const start = now + i * 0.12;
+                    gain.gain.setValueAtTime(0.2, start);
+                    gain.gain.exponentialRampToValueAtTime(0.01, start + 0.12);
+                    osc.start(start);
+                    osc.stop(start + 0.12);
+                });
+                break;
+            }
+            case 'buy': {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.type = 'sine';
+                osc.frequency.value = 600;
+                gain.gain.setValueAtTime(0.18, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                osc.start(now);
+                osc.stop(now + 0.1);
+                break;
+            }
+            case 'error': {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.type = 'square';
+                osc.frequency.value = 120;
+                gain.gain.setValueAtTime(0.12, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+                osc.start(now);
+                osc.stop(now + 0.08);
+                break;
+            }
+            case 'coin': {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(880, now);
+                osc.frequency.linearRampToValueAtTime(1200, now + 0.06);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.06);
+                osc.start(now);
+                osc.stop(now + 0.06);
+                break;
+            }
+            default:
+                if (soundName.startsWith('http') || soundName.endsWith('.mp3') || soundName.endsWith('.wav')) {
+                    console.warn('State.js: External sound URLs not yet supported:', soundName);
+                }
+        }
+    }
+
+    persistElements = new Set();
+    persistDebounceTimers = new Map();
+
+    setupPersist(element) {
+        const persist = element.getAttribute('data-state-persist');
+        if (persist !== 'true') return;
+
+        const key = element.getAttribute('data-state-persist-key') ||
+                    (element.id ? `state-persist-${element.id}` : null);
+
+        if (!key) {
+            console.warn('State.js: data-state-persist requires element id or data-state-persist-key');
+            return;
+        }
+        this.loadPersisted(element, key);
+        this.persistElements.add({ element, key });
+        const watchAttr = element.getAttribute('data-state-watch');
+        const attributeFilter = watchAttr ?
+            watchAttr.split(',').map(a => `data-${a.trim()}`) :
+            null;
+
+        const observer = new MutationObserver(() => {
+            this.debounceSave(element, key);
+        });
+
+        if (attributeFilter) {
+            observer.observe(element, { attributes: true, attributeFilter: attributeFilter });
+        } else {
+            observer.observe(element, { attributes: true });
+        }
+    }
+
+    loadPersisted(element, key) {
+        try {
+            const stored = localStorage.getItem(key);
+            if (stored) {
+                const data = JSON.parse(stored);
+                Object.keys(data).forEach(attr => {
+                    element.setAttribute(`data-${attr}`, data[attr]);
+                });
+            }
+        } catch (e) {
+            console.warn('State.js: Failed to load persisted state:', e);
+        }
+    }
+
+    debounceSave(element, key) {
+        if (this.persistDebounceTimers.has(key)) {
+            clearTimeout(this.persistDebounceTimers.get(key));
+        }
+
+        const timer = setTimeout(() => {
+            this.savePersisted(element, key);
+            this.persistDebounceTimers.delete(key);
+        }, 500);
+
+        this.persistDebounceTimers.set(key, timer);
+    }
+
+    savePersisted(element, key) {
+        try {
+            const watchAttr = element.getAttribute('data-state-watch');
+            if (!watchAttr) return;
+
+            const attrs = watchAttr.split(',').map(a => a.trim());
+            const data = {};
+            attrs.forEach(attr => {
+                const value = element.getAttribute(`data-${attr}`);
+                if (value !== null) {
+                    data[attr] = value;
+                }
+            });
+
+            localStorage.setItem(key, JSON.stringify(data));
+        } catch (e) {
+            console.warn('State.js: Failed to save persisted state:', e);
+        }
+    }
+
+
+    dispatchStateEvent(triggerElement, bindAttr, attrName, oldValue, newValue) {
+        const eventName = triggerElement.getAttribute('data-state-event');
+        if (!eventName) return;
+
+        const targetIds = bindAttr ? bindAttr.split(',').map(id => id.trim()) : [];
+        const detail = {
+            element: triggerElement,
+            attr: attrName,
+            oldValue: oldValue,
+            newValue: newValue,
+            boundId: targetIds[0] || null
+        };
+
+        const event = new CustomEvent(`state:${eventName}`, {
+            detail: detail,
+            bubbles: true,
+            cancelable: false
+        });
+
+        document.dispatchEvent(event);
     }
 }
 

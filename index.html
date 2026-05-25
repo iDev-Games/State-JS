@@ -423,7 +423,7 @@
 
                     <hr id="headerLine" />
 
-                    <h2 id="documentation">Documentation <sup>v1.0.5</sup></h2>
+                    <h2 id="documentation">Documentation <sup>v1.1.0</sup></h2>
                 </div>
             </div>
 
@@ -806,6 +806,473 @@
                 observer.observe(autofireDemo, { attributes: true });
                 updateUnlockStatus();
             </script>
+
+            <hr/>
+
+            <div class="container alignCenter background8" style="background: #0a1a0a;">
+                <div class="box boxBG title">
+                    <h2>New in v1.1.0: Game Development Extensions</h2>
+                </div>
+                <div class="box boxBG fadeIn" data-state>
+                    <p style="color: #00ff88; font-weight: bold;">Seven new declarative primitives for building complete games with ZERO hand-written JavaScript logic!</p>
+                </div>
+            </div>
+
+            <hr/>
+
+            <div class="container alignCenter background6" style="background: #1a0520;">
+                <div class="box boxBG title">
+                    <h2>Extension 1: Interval Triggers (Passive Income)</h2>
+                </div>
+                <div class="box boxBG fadeIn demo-interactive" data-state>
+                    <p>Triggers that fire automatically on a timer - perfect for passive income and cooldowns!</p>
+
+                    <div id="intervalDemo"
+                         data-state
+                         data-state-watch="gold,workers"
+                         data-state-var="true"
+                         data-gold="0"
+                         data-workers="0">
+
+                        <div class="value-display" style="margin-bottom: 20px;">
+                            <div style="font-size: 28px; color: #ffd700;">Gold: <span data-state-display="gold">0</span></div>
+                            <div style="font-size: 20px; color: #88ccff;">Workers: <span data-state-display="workers">0</span></div>
+                        </div>
+
+                        <button class="button"
+                                data-state
+                                data-state-trigger
+                                data-state-bind="intervalDemo"
+                                data-state-attr="workers"
+                                data-state-increment="1"
+                                style="margin: 10px; padding: 15px 30px; background: #0369a1; color: white; border: none; border-radius: 5px; cursor: pointer; font-family: 'Bebas Neue', cursive; font-size: 20px; letter-spacing: 2px;">
+                            Hire Worker
+                        </button>
+
+                        <!-- Passive income: each worker generates gold every second -->
+                        <button data-state
+                                data-state-trigger
+                                data-state-bind="intervalDemo"
+                                data-state-attr="gold"
+                                data-state-increment="calc(var(--state-workers))"
+                                data-state-interval="1000"
+                                data-state-condition="workers > 0"
+                                style="display:none">
+                        </button>
+
+                        <div style="margin-top: 20px; padding: 15px; background: rgba(255,215,0,0.1); border-radius: 8px; border: 2px solid #ffd700;">
+                            <strong style="color: #ffd700;">Watch the magic:</strong>
+                            <p style="color: #ccc; margin: 10px 0;">Each worker generates 1 gold per second automatically! Hire more workers to increase your income.</p>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 30px; color: #fff;">The Code:</h3>
+                    <div class="code-box">
+                        <pre>&lt;!-- Hidden trigger fires every 1000ms --&gt;
+&lt;button data-state
+        data-state-trigger
+        data-state-bind="player"
+        data-state-attr="gold"
+        data-state-increment="calc(var(--state-workers))"
+        data-state-interval="1000"
+        data-state-condition="workers > 0"
+        style="display:none"&gt;
+&lt;/button&gt;</pre>
+                    </div>
+                </div>
+            </div>
+
+            <hr/>
+
+            <div class="container alignCenter background5" style="background: #0a0a2e;">
+                <div class="box boxBG title">
+                    <h2>Extension 2 & 3: data-state-set & data-state-text</h2>
+                </div>
+                <div class="box boxBG fadeIn demo-interactive" data-state>
+                    <p><strong>data-state-set</strong> sets exact values, <strong>data-state-text</strong> uses template strings!</p>
+
+                    <div id="textDemo"
+                         data-state
+                         data-state-watch="health,healthmax,level,name"
+                         data-state-var="true"
+                         data-health="75"
+                         data-healthmax="100"
+                         data-level="5"
+                         data-name="Hero">
+
+                        <!-- Template string interpolation -->
+                        <h2 data-state
+                            data-state-bind="textDemo"
+                            data-state-text="Level {level} {name}"
+                            style="color: #fff; font-size: 32px;">
+                        </h2>
+
+                        <p data-state
+                           data-state-bind="textDemo"
+                           data-state-text="HP: {health}/{healthmax}"
+                           style="color: #ff6b6b; font-size: 24px; font-weight: bold;">
+                        </p>
+
+                        <div style="margin: 20px 0;">
+                            <button class="button"
+                                    data-state
+                                    data-state-trigger
+                                    data-state-bind="textDemo"
+                                    data-state-attr="health"
+                                    data-state-decrement="10"
+                                    data-state-condition="health >= 10"
+                                    style="margin: 5px; padding: 10px 20px; background: #dc2626; color: white; border: none; border-radius: 5px; cursor: pointer; font-family: 'Bebas Neue', cursive; font-size: 18px;">
+                                Take Damage -10
+                            </button>
+
+                            <button class="button"
+                                    data-state
+                                    data-state-trigger
+                                    data-state-bind="textDemo"
+                                    data-state-attr="health"
+                                    data-state-set="calc(var(--state-healthmax))"
+                                    data-state-condition="health < 100"
+                                    style="margin: 5px; padding: 10px 20px; background: #16a34a; color: white; border: none; border-radius: 5px; cursor: pointer; font-family: 'Bebas Neue', cursive; font-size: 18px;">
+                                Full Heal (data-state-set)
+                            </button>
+
+                            <button class="button"
+                                    data-state
+                                    data-state-trigger
+                                    data-state-bind="textDemo"
+                                    data-state-attr="level"
+                                    data-state-increment="1"
+                                    style="margin: 5px; padding: 10px 20px; background: #7c3aed; color: white; border: none; border-radius: 5px; cursor: pointer; font-family: 'Bebas Neue', cursive; font-size: 18px;">
+                                Level Up +1
+                            </button>
+                        </div>
+
+                        <div style="margin-top: 20px; padding: 15px; background: rgba(124,58,237,0.1); border-radius: 8px; border: 2px solid #7c3aed;">
+                            <strong style="color: #a78bfa;">Notice:</strong>
+                            <p style="color: #ccc; margin: 10px 0;">Text updates automatically using {token} syntax! Full Heal uses data-state-set with calc() to restore to max.</p>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 30px; color: #fff;">The Code:</h3>
+                    <div class="code-box">
+                        <pre>&lt;!-- Template string with tokens --&gt;
+&lt;h2 data-state
+    data-state-bind="player"
+    data-state-text="Level {level} {name}"&gt;
+&lt;/h2&gt;
+
+&lt;!-- Set to exact value using calc() --&gt;
+&lt;button data-state-trigger
+        data-state-bind="player"
+        data-state-attr="health"
+        data-state-set="calc(var(--state-healthmax))"&gt;
+    Full Heal
+&lt;/button&gt;</pre>
+                    </div>
+                </div>
+            </div>
+
+            <hr/>
+
+            <div class="container alignCenter background9" style="background: #2e0a1a;">
+                <div class="box boxBG title">
+                    <h2>Extension 4: Conditional CSS Classes</h2>
+                </div>
+                <div class="box boxBG fadeIn demo-interactive" data-state>
+                    <p>Automatically add/remove CSS classes based on conditions - perfect for visual feedback!</p>
+
+                    <div id="classDemo"
+                         data-state
+                         data-state-watch="health"
+                         data-state-var="true"
+                         data-health="100">
+
+                        <div class="value-display" style="margin-bottom: 20px;">
+                            <div style="font-size: 28px; color: #fff;">Health: <span data-state-display="health">100</span>/100</div>
+                        </div>
+
+                        <!-- Health bar with conditional classes -->
+                        <div id="healthBarContainer"
+                             data-state
+                             data-state-bind="classDemo"
+                             data-state-class="health-low"
+                             data-state-class-condition="health <= 50"
+                             data-state-class-2="health-critical"
+                             data-state-class-condition-2="health <= 20"
+                             data-state-class-3="health-full"
+                             data-state-class-condition-3="health >= 100"
+                             style="width: 300px; height: 40px; background: #333; border-radius: 20px; margin: 20px auto; overflow: hidden; position: relative; border: 3px solid #555;">
+                            <div style="width: var(--state-health-percent); height: 100%; background: linear-gradient(90deg, #16a34a, #22c55e); transition: width 0.3s;"></div>
+                        </div>
+
+                        <div style="margin: 20px 0;">
+                            <button class="button"
+                                    data-state
+                                    data-state-trigger
+                                    data-state-bind="classDemo"
+                                    data-state-attr="health"
+                                    data-state-decrement="15"
+                                    data-state-condition="health >= 15"
+                                    style="margin: 5px; padding: 10px 20px; background: #dc2626; color: white; border: none; border-radius: 5px; cursor: pointer; font-family: 'Bebas Neue', cursive; font-size: 18px;">
+                                Damage -15
+                            </button>
+
+                            <button class="button"
+                                    data-state
+                                    data-state-trigger
+                                    data-state-bind="classDemo"
+                                    data-state-attr="health"
+                                    data-state-increment="15"
+                                    data-state-condition="health <= 85"
+                                    style="margin: 5px; padding: 10px 20px; background: #16a34a; color: white; border: none; border-radius: 5px; cursor: pointer; font-family: 'Bebas Neue', cursive; font-size: 18px;">
+                                Heal +15
+                            </button>
+
+                            <button class="button"
+                                    data-state
+                                    data-state-trigger
+                                    data-state-bind="classDemo"
+                                    data-state-attr="health"
+                                    data-state-set="100"
+                                    data-state-condition="health < 100"
+                                    style="margin: 5px; padding: 10px 20px; background: #0369a1; color: white; border: none; border-radius: 5px; cursor: pointer; font-family: 'Bebas Neue', cursive; font-size: 18px;">
+                                Reset
+                            </button>
+                        </div>
+
+                        <div style="margin-top: 20px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                            <strong style="color: #fff;">Watch the bar change:</strong>
+                            <p style="color: #ccc; margin: 10px 0;">≤50 HP: Yellow pulse | ≤20 HP: Red shake | 100 HP: Green glow</p>
+                        </div>
+                    </div>
+
+                    <style>
+                        .health-low #healthBarContainer > div {
+                            background: linear-gradient(90deg, #eab308, #facc15) !important;
+                            animation: health-pulse 1s infinite;
+                        }
+
+                        .health-critical #healthBarContainer > div {
+                            background: linear-gradient(90deg, #dc2626, #ef4444) !important;
+                            animation: health-critical 0.5s infinite;
+                        }
+
+                        .health-full #healthBarContainer {
+                            box-shadow: 0 0 20px #22c55e;
+                            border-color: #22c55e !important;
+                        }
+
+                        @keyframes health-pulse {
+                            0%, 100% { opacity: 1; }
+                            50% { opacity: 0.7; }
+                        }
+
+                        @keyframes health-critical {
+                            0%, 100% { transform: translateX(0); }
+                            25% { transform: translateX(-3px); }
+                            75% { transform: translateX(3px); }
+                        }
+                    </style>
+
+                    <h3 style="margin-top: 30px; color: #fff;">The Code:</h3>
+                    <div class="code-box">
+                        <pre>&lt;div data-state
+     data-state-bind="player"
+     data-state-class="health-low"
+     data-state-class-condition="health <= 50"
+     data-state-class-2="health-critical"
+     data-state-class-condition-2="health <= 20"
+     data-state-class-3="health-full"
+     data-state-class-condition-3="health >= 100"&gt;
+&lt;/div&gt;
+
+&lt;style&gt;
+.health-low { animation: pulse 1s infinite; }
+.health-critical { animation: shake 0.5s infinite; }
+.health-full { box-shadow: 0 0 20px green; }
+&lt;/style&gt;</pre>
+                    </div>
+                </div>
+            </div>
+
+            <hr/>
+
+            <div class="container alignCenter background7" style="background: #0a1a2e;">
+                <div class="box boxBG title">
+                    <h2>Extension 5: Procedural Sound Effects</h2>
+                </div>
+                <div class="box boxBG fadeIn demo-interactive" data-state>
+                    <p>Fire-and-forget Web Audio sounds - no audio files needed! Click the buttons to hear:</p>
+
+                    <div id="soundDemo"
+                         data-state
+                         data-state-watch="score"
+                         data-state-var="true"
+                         data-score="0">
+
+                        <div class="value-display" style="margin-bottom: 20px;">
+                            <div style="font-size: 28px; color: #fff;">Score: <span data-state-display="score">0</span></div>
+                        </div>
+
+                        <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin: 20px 0;">
+                            <button class="button"
+                                    data-state
+                                    data-state-trigger
+                                    data-state-bind="soundDemo"
+                                    data-state-attr="score"
+                                    data-state-increment="1"
+                                    data-state-sound="click"
+                                    style="padding: 15px 25px; background: #6366f1; color: white; border: none; border-radius: 8px; cursor: pointer; font-family: 'Bebas Neue', cursive; font-size: 18px; letter-spacing: 2px;">
+                                Click Sound
+                            </button>
+
+                            <button class="button"
+                                    data-state
+                                    data-state-trigger
+                                    data-state-bind="soundDemo"
+                                    data-state-attr="score"
+                                    data-state-increment="10"
+                                    data-state-sound="coin"
+                                    style="padding: 15px 25px; background: #fbbf24; color: #000; border: none; border-radius: 8px; cursor: pointer; font-family: 'Bebas Neue', cursive; font-size: 18px; letter-spacing: 2px;">
+                                Coin Sound
+                            </button>
+
+                            <button class="button"
+                                    data-state
+                                    data-state-trigger
+                                    data-state-bind="soundDemo"
+                                    data-state-attr="score"
+                                    data-state-increment="50"
+                                    data-state-sound="buy"
+                                    style="padding: 15px 25px; background: #10b981; color: white; border: none; border-radius: 8px; cursor: pointer; font-family: 'Bebas Neue', cursive; font-size: 18px; letter-spacing: 2px;">
+                                Buy Sound
+                            </button>
+
+                            <button class="button"
+                                    data-state
+                                    data-state-trigger
+                                    data-state-bind="soundDemo"
+                                    data-state-attr="score"
+                                    data-state-increment="100"
+                                    data-state-sound="levelup"
+                                    style="padding: 15px 25px; background: #8b5cf6; color: white; border: none; border-radius: 8px; cursor: pointer; font-family: 'Bebas Neue', cursive; font-size: 18px; letter-spacing: 2px;">
+                                Level Up Sound
+                            </button>
+                        </div>
+
+                        <div style="margin-top: 20px; padding: 15px; background: rgba(99,102,241,0.1); border-radius: 8px; border: 2px solid #6366f1;">
+                            <strong style="color: #818cf8;">Built-in sounds:</strong>
+                            <p style="color: #ccc; margin: 10px 0;">click • coin • buy • levelup</p>
+                            <p style="color: #999; font-size: 14px;">Generated with Web Audio API - zero external dependencies!</p>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 30px; color: #fff;">The Code:</h3>
+                    <div class="code-box">
+                        <pre>&lt;button data-state-trigger
+        data-state-bind="player"
+        data-state-attr="score"
+        data-state-increment="10"
+        data-state-sound="coin"&gt;
+    Collect Coin
+&lt;/button&gt;</pre>
+                    </div>
+                </div>
+            </div>
+
+            <hr/>
+
+            <div class="container alignCenter background6" style="background: #1a0a0a;">
+                <div class="box boxBG title">
+                    <h2>Extension 6 & 7: Persist & Events</h2>
+                </div>
+                <div class="box boxBG fadeIn demo-interactive" data-state>
+                    <p><strong>data-state-persist</strong> saves to localStorage, <strong>data-state-event</strong> dispatches CustomEvents!</p>
+
+                    <div id="persistDemo"
+                         data-state
+                         data-state-watch="savecount"
+                         data-state-persist="true"
+                         data-state-persist-key="statejs-demo-save"
+                         data-state-var="true"
+                         data-savecount="0">
+
+                        <div class="value-display" style="margin-bottom: 20px;">
+                            <div style="font-size: 28px; color: #00ff88;">Save Count: <span data-state-display="savecount">0</span></div>
+                            <div id="eventLog" style="margin-top: 10px; padding: 10px; background: #000; border-radius: 5px; font-family: monospace; font-size: 12px; color: #00ff88; max-height: 100px; overflow-y: auto;">
+                                Event log will appear here...
+                            </div>
+                        </div>
+
+                        <div style="margin: 20px 0;">
+                            <button class="button"
+                                    data-state
+                                    data-state-trigger
+                                    data-state-bind="persistDemo"
+                                    data-state-attr="savecount"
+                                    data-state-increment="1"
+                                    data-state-event="save-increment"
+                                    data-state-sound="coin"
+                                    style="margin: 5px; padding: 15px 25px; background: #10b981; color: white; border: none; border-radius: 5px; cursor: pointer; font-family: 'Bebas Neue', cursive; font-size: 18px;">
+                                Increment & Save
+                            </button>
+
+                            <button class="button"
+                                    onclick="localStorage.removeItem('statejs-demo-save'); location.reload();"
+                                    style="margin: 5px; padding: 15px 25px; background: #ef4444; color: white; border: none; border-radius: 5px; cursor: pointer; font-family: 'Bebas Neue', cursive; font-size: 18px;">
+                                Clear Save & Reload
+                            </button>
+                        </div>
+
+                        <div style="margin-top: 20px; padding: 15px; background: rgba(16,185,129,0.1); border-radius: 8px; border: 2px solid #10b981;">
+                            <strong style="color: #34d399;">Try this:</strong>
+                            <p style="color: #ccc; margin: 10px 0;">1. Click "Increment & Save" a few times<br>2. Reload the page - your count persists!<br>3. Watch the event log below for CustomEvents</p>
+                        </div>
+                    </div>
+
+                    <script>
+                        // Listen for CustomEvents
+                        const eventLog = document.getElementById('eventLog');
+                        let eventCount = 0;
+                        let hasReceivedEvent = false;
+
+                        document.addEventListener('state:save-increment', (e) => {
+                            eventCount++;
+
+                            // Clear placeholder text on first event
+                            if (!hasReceivedEvent) {
+                                eventLog.textContent = '';
+                                hasReceivedEvent = true;
+                            }
+
+                            const logEntry = `[${eventCount}] Event fired! attr="${e.detail.attr}" ${e.detail.oldValue}→${e.detail.newValue}`;
+                            eventLog.textContent = logEntry + '\n' + eventLog.textContent;
+                        });
+                    </script>
+
+                    <h3 style="margin-top: 30px; color: #fff;">The Code:</h3>
+                    <div class="code-box">
+                        <pre>&lt;div id="game"
+     data-state
+     data-state-watch="score,level"
+     data-state-persist="true"
+     data-state-persist-key="my-game"&gt;
+&lt;/div&gt;
+
+&lt;button data-state-trigger
+        data-state-attr="score"
+        data-state-increment="10"
+        data-state-event="score-up"&gt;
+&lt;/button&gt;
+
+&lt;script&gt;
+document.addEventListener('state:score-up', (e) =&gt; {
+    console.log('Score increased!', e.detail);
+});
+&lt;/script&gt;</pre>
+                    </div>
+                </div>
+            </div>
 
             <hr/>
 
