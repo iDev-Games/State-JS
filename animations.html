@@ -1,0 +1,1343 @@
+<html>
+    <head>
+        <title>State-Animations.css – Ready-Made UI Animations for State.js</title>
+
+        <!-- State JS -->
+        <script src="src/state.js"></script>
+        <link rel="stylesheet" href="src/state-animations.css">
+
+        <!-- Google Fonts -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+
+        <!-- Mobile viewport meta tag -->
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+        <!-- Styles -->
+        <style>
+            html {
+                scroll-behavior: smooth;
+            }
+            body{
+                margin:0px;
+                padding:0px;
+                background-color:#060606;
+                color:#FFF;
+                font-family: 'Space Mono', monospace;
+            }
+            h1{
+                font-family: 'Bebas Neue', cursive;
+                color: #700c0c;
+                text-shadow: 2px 2px 2px #000000;
+                font-size:72px;
+                margin: 20px auto;
+                text-align: center;
+            }
+            h2{
+                font-family: 'Bebas Neue', cursive;
+                color: #700c0c;
+                text-shadow: 2px 2px 2px #000000;
+                font-size:48px;
+                margin: 30px 0 10px 0;
+            }
+            h3{
+                font-family: 'Bebas Neue', cursive;
+                color: #FFF;
+                font-size:32px;
+                margin: 25px 0 10px 0;
+            }
+            p {
+                line-height: 1.6;
+                margin: 15px 0;
+            }
+            .container{
+                background-color:#060606;
+                width:100%;
+                position:relative;
+                margin:auto;
+                padding: 40px 20px;
+                max-width: 1200px;
+            }
+            .example-section {
+                background: #111;
+                padding: 30px;
+                margin: 30px 0;
+                border-radius: 10px;
+                border-left: 5px solid #700c0c;
+            }
+            .demo-preview {
+                background: #1a1a1a;
+                padding: 40px;
+                border-radius: 10px;
+                margin: 20px 0;
+                text-align: center;
+                min-height: 150px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+            }
+            .code-example {
+                background-color: #000;
+                padding: 20px;
+                border-radius: 5px;
+                font-family: 'Courier New', monospace;
+                font-size: 14px;
+                overflow-x: auto;
+                margin: 20px 0;
+                border: 1px solid #333;
+                position: relative;
+            }
+            .code-example pre {
+                margin: 0;
+                color: #e8e8e8;
+            }
+            .copy-btn {
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                background: #700c0c;
+                color: white;
+                border: none;
+                padding: 8px 15px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 12px;
+                font-family: 'Space Mono', monospace;
+            }
+            .copy-btn:hover {
+                background: #a01010;
+            }
+            .button {
+                display: inline-block;
+                padding: 15px 30px;
+                background: #700c0c;
+                color: white;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                margin: 5px;
+                font-family: 'Space Mono', monospace;
+                font-size: 14px;
+            }
+            .button:hover {
+                background: #a01010;
+            }
+
+            /* Health Bar Styles */
+            .health-container {
+                width: 100%;
+                max-width: 400px;
+                margin: 0 auto;
+            }
+            .health-bar {
+                width: 100%;
+                height: 40px;
+                background: #333;
+                border-radius: 20px;
+                overflow: hidden;
+                position: relative;
+            }
+            .health-fill {
+                height: 100%;
+                background: linear-gradient(90deg, #ff0000 0%, #ffff00 50%, #00ff00 100%);
+                width: var(--state-health-percent);
+                transition: width 0.3s ease-out;
+            }
+            .health-text {
+                text-align: center;
+                font-size: 24px;
+                font-family: 'Bebas Neue';
+                margin-top: 10px;
+            }
+
+            a {
+                color: #a01010;
+            }
+            a:hover {
+                color: #ff0000;
+            }
+
+            .back-link {
+                text-align: center;
+                margin: 40px 0;
+                font-size: 18px;
+            }
+
+            /* Menu System Styles */
+            #menuDemo #mainMenu,
+            #menuDemo #settingsMenu,
+            #menuDemo #creditsMenu {
+                display: none;
+                opacity: 0;
+                transform: translateY(-20px);
+                transition: all 0.3s;
+            }
+
+            #menuDemo.state-menuOpen #mainMenu {
+                display: block !important;
+                animation: menu-slide-in 0.3s forwards;
+            }
+
+            #menuDemo.state-settingsOpen #settingsMenu {
+                display: block !important;
+                animation: menu-slide-in 0.3s forwards;
+            }
+
+            #menuDemo.state-creditsOpen #creditsMenu {
+                display: block !important;
+                animation: menu-slide-in 0.3s forwards;
+            }
+
+            /* Hide main menu when in submenus */
+            #menuDemo.state-settingsOpen #mainMenu,
+            #menuDemo.state-creditsOpen #mainMenu {
+                display: none !important;
+            }
+
+            @keyframes menu-slide-in {
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            /* Dialogue System Styles */
+            #dialogueDemo #dialogueBox,
+            #dialogueDemo #response1,
+            #dialogueDemo #response2 {
+                display: none;
+                opacity: 0;
+            }
+
+            #dialogueDemo.state-dialogueActive #dialogueBox {
+                display: block !important;
+                animation: dialogue-fade-in 0.3s forwards;
+            }
+
+            #dialogueDemo.state-choice1 #response1,
+            #dialogueDemo.state-choice2 #response2 {
+                display: block !important;
+                animation: dialogue-fade-in 0.3s forwards;
+            }
+
+            #dialogueDemo.state-choice1 #dialogueBox,
+            #dialogueDemo.state-choice2 #dialogueBox {
+                display: none !important;
+            }
+
+            @keyframes dialogue-fade-in {
+                to { opacity: 1; }
+            }
+
+            /* Inventory System Styles */
+            #inventoryDemo > div > div > div {
+                transition: all 0.3s;
+            }
+
+            #inventoryDemo.state-sword > div > div > div:nth-child(1),
+            #inventoryDemo.state-shield > div > div > div:nth-child(2),
+            #inventoryDemo.state-potion > div > div > div:nth-child(3),
+            #inventoryDemo.state-key > div > div > div:nth-child(4) {
+                background: #700c0c !important;
+                transform: scale(1.05);
+                box-shadow: 0 0 20px rgba(112, 12, 12, 0.6);
+            }
+
+            /* Cooldown System Styles */
+            #cooldownDemo > div > div > div > div {
+                transition: all 0.3s;
+                filter: grayscale(1) brightness(0.5);
+            }
+
+            #cooldownDemo.state-ability1Ready > div > div > div:nth-child(1),
+            #cooldownDemo.state-ability2Ready > div > div > div:nth-child(2),
+            #cooldownDemo.state-ability3Ready > div > div > div:nth-child(3) {
+                background: #700c0c !important;
+                filter: grayscale(0) brightness(1);
+                box-shadow: 0 0 20px rgba(112, 12, 12, 0.8);
+                animation: ability-ready-pulse 2s infinite;
+            }
+
+            @keyframes ability-ready-pulse {
+                0%, 100% { filter: brightness(1); }
+                50% { filter: brightness(1.3); }
+            }
+
+            /* Regeneration Animation */
+            #regenDemo.state-regenerating .health-bar {
+                animation: regen-pulse 2s infinite;
+            }
+
+            @keyframes regen-pulse {
+                0%, 100% { filter: brightness(1); }
+                50% { filter: brightness(1.5); }
+            }
+
+            /* Enemy State Machine Styles */
+            #enemyDemo > div > div:nth-child(1) {
+                transition: all 0.3s;
+            }
+
+            #enemyDemo.state-idle > div > div:nth-child(1) {
+                animation: enemy-idle 2s ease-in-out infinite;
+            }
+
+            #enemyDemo.state-attacking > div > div:nth-child(1) {
+                animation: enemy-attack 0.5s linear infinite;
+            }
+
+            #enemyDemo.state-stunned > div > div:nth-child(1) {
+                animation: stunned-dizzy 0.3s linear infinite;
+            }
+
+            #enemyDemo[data-enemyHealth="0"] > div > div:nth-child(1) {
+                animation: death 2s ease-out forwards;
+            }
+
+            @keyframes enemy-idle {
+                0%, 100% { transform: translateY(0); }
+                50% { transform: translateY(-10px); }
+            }
+
+            @keyframes enemy-attack {
+                0%, 100% { transform: translateX(0); }
+                25% { transform: translateX(-10px); }
+                75% { transform: translateX(10px); }
+            }
+
+            /* Power-Up Demos - Apply animations directly */
+            #powerDemo.state-powered {
+                animation: power-glow 1s ease-in-out infinite alternate !important;
+            }
+
+            #powerDemo.state-invincible {
+                animation: invincible-shimmer 0.5s linear infinite !important;
+            }
+
+            #powerDemo.state-shielded {
+                animation: shield-pulse 1.5s ease-in-out infinite !important;
+            }
+
+            #powerDemo.state-stunned {
+                animation: stunned-dizzy 0.3s linear infinite !important;
+            }
+
+            /* Status Effect Demos */
+            #statusDemo.state-poisoned {
+                animation: poisoned-pulse 1s ease-in-out infinite !important;
+            }
+
+            #statusDemo.state-frozen {
+                animation: frozen-shake 2s ease-in-out infinite !important;
+            }
+
+            #statusDemo.state-burning {
+                animation: burning-flicker 0.3s linear infinite !important;
+            }
+
+            #statusDemo.state-healing {
+                animation: healing-sparkle 1s ease-out infinite !important;
+            }
+
+            #statusDemo.state-cursed {
+                animation: cursed-darken 1.5s ease-in-out infinite alternate !important;
+            }
+
+            #statusDemo.state-blessed {
+                animation: blessed-glow 2s ease-in-out infinite !important;
+            }
+
+            /* Level Up Demo */
+            #levelDemo.state-level-up {
+                animation: level-up-flash 1s ease-out !important;
+            }
+
+            /* Notification Demos */
+            #notificationDemo.state-success {
+                animation: success-bounce 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) !important;
+            }
+
+            #notificationDemo.state-error {
+                animation: error-shake 0.4s ease-out !important;
+            }
+
+            #notificationDemo.state-warning {
+                animation: warning-shake 0.5s ease-out !important;
+            }
+        </style>
+    </head>
+    <body>
+
+        <div class="container">
+            <h1>State-Animations.css</h1>
+            <p style="text-align:center; font-size:18px;">Ready-made CSS animations for interactive UIs with State.js. Perfect for dashboards, web apps, games, and more. Just copy and paste!</p>
+
+            <!-- Health Bar Example -->
+            <div class="example-section">
+                <h2>Progress Bar with Animations</h2>
+                <p>A complete progress indicator that automatically changes color and animations based on value. Perfect for health bars in games, download progress, storage meters, or any value-based UI.</p>
+
+                <h3>Live Demo</h3>
+                <div class="demo-preview">
+                    <div id="healthDemo"
+                         class="health-container"
+                         data-state
+                         data-state-watch="health"
+                         data-health="100"
+                         data-health-min="0"
+                         data-health-max="100">
+                        <div class="health-bar">
+                            <div class="health-fill"></div>
+                        </div>
+                        <div class="health-text">Health: <span data-state-display="health">100</span></div>
+                        <div style="margin-top: 20px;">
+                            <input type="range" data-state data-state-bind="healthDemo" data-state-attr="health" min="0" max="100" value="100" style="width: 300px;">
+                        </div>
+                    </div>
+                </div>
+
+                <h3>How This Demo Works</h3>
+                <div class="code-example">
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    <pre>&lt;!-- Health bar container --&gt;
+&lt;div id="healthDemo"
+     data-state
+     data-state-watch="health"
+     data-health="100"
+     data-health-min="0"
+     data-health-max="100"&gt;
+
+    &lt;div class="health-bar"&gt;
+        &lt;div class="health-fill"&gt;&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div&gt;Health: &lt;span data-state-display="health"&gt;100&lt;/span&gt;&lt;/div&gt;
+
+    &lt;!-- Slider that auto-updates the health --&gt;
+    &lt;input type="range"
+           data-state
+           data-state-bind="healthDemo"
+           data-state-attr="health"
+           min="0" max="100" value="100"&gt;
+&lt;/div&gt;
+
+&lt;style&gt;
+.health-bar {
+    width: 100%;
+    height: 40px;
+    background: #333;
+    border-radius: 20px;
+    overflow: hidden;
+}
+.health-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ff0000 0%, #ffff00 50%, #00ff00 100%);
+    width: var(--state-health-percent);
+    transition: width 0.3s ease-out;
+}
+&lt;/style&gt;</pre>
+                </div>
+
+                <p><strong>What happens automatically:</strong></p>
+                <ul>
+                    <li>At 0 health: Death animation (fade + rotate)</li>
+                    <li>At 10-30 health: Red pulsing warning</li>
+                    <li>At 100 health: Green glow effect</li>
+                </ul>
+            </div>
+
+            <!-- Score Counter Example -->
+            <div class="example-section">
+                <h2>Counter with Milestone Animations</h2>
+                <p>Dynamic counter that celebrates milestones automatically. Great for scores, points, views, likes, download counts, or any numeric metric.</p>
+
+                <h3>Live Demo</h3>
+                <div class="demo-preview">
+                    <div id="scoreDemo"
+                         data-state
+                         data-state-watch="score"
+                         data-score="0"
+                         data-score-min="0"
+                         data-score-max="1000">
+                        <div style="font-size: 48px; font-family: 'Bebas Neue';">
+                            Score: <span data-state-display="score">0</span>
+                        </div>
+                        <div style="margin-top: 20px;">
+                            <input type="range" data-state data-state-bind="scoreDemo" data-state-attr="score" min="0" max="1000" step="10" value="0" style="width: 300px;">
+                        </div>
+                    </div>
+                </div>
+
+                <h3>How This Demo Works</h3>
+                <div class="code-example">
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    <pre>&lt;!-- Score container --&gt;
+&lt;div id="scoreDemo"
+     data-state
+     data-state-watch="score"
+     data-score="0"
+     data-score-min="0"
+     data-score-max="1000"&gt;
+
+    &lt;div class="score-display"&gt;
+        Score: &lt;span data-state-display="score"&gt;0&lt;/span&gt;
+    &lt;/div&gt;
+
+    &lt;!-- Slider to test different scores --&gt;
+    &lt;input type="range"
+           data-state
+           data-state-bind="scoreDemo"
+           data-state-attr="score"
+           min="0" max="1000" step="10" value="0"&gt;
+&lt;/div&gt;
+
+&lt;style&gt;
+.score-display {
+    font-size: 48px;
+    font-family: 'Bebas Neue', sans-serif;
+}
+&lt;/style&gt;</pre>
+                </div>
+
+                <p><strong>What happens automatically:</strong></p>
+                <ul>
+                    <li>At 100, 500, 1000, 5000: Burst animation with glow</li>
+                    <li>Scores automatically trigger visual celebrations!</li>
+                </ul>
+            </div>
+
+            <!-- Power-Up States Example -->
+            <div class="example-section">
+                <h2>Boolean State Toggles</h2>
+                <p>Visual effects for active/inactive states using boolean toggles. Perfect for power-ups in games, feature flags, premium status, active subscriptions, or any on/off state.</p>
+
+                <h3>Live Demo</h3>
+                <div class="demo-preview">
+                    <div id="powerDemo"
+                         data-state-toggles="powered,invincible,shielded,stunned"
+                         data-powered="false"
+                         data-invincible="false"
+                         data-shielded="false"
+                         data-stunned="false"
+                         style="font-size: 64px; font-family: 'Bebas Neue';">
+                        PLAYER
+                    </div>
+                    <div style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
+                        <button class="button" data-state data-state-trigger data-state-bind="powerDemo" data-state-toggle="powered">Toggle Powered</button>
+                        <button class="button" data-state data-state-trigger data-state-bind="powerDemo" data-state-toggle="invincible">Toggle Invincible</button>
+                        <button class="button" data-state data-state-trigger data-state-bind="powerDemo" data-state-toggle="shielded">Toggle Shielded</button>
+                        <button class="button" data-state data-state-trigger data-state-bind="powerDemo" data-state-toggle="stunned">Toggle Stunned</button>
+                    </div>
+                </div>
+
+                <h3>How This Demo Works</h3>
+                <div class="code-example">
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    <pre>&lt;!-- Player with power-up states --&gt;
+&lt;div id="powerDemo"
+     data-state
+     data-state-toggles="powered,invincible,shielded,stunned"
+     data-powered="false"
+     data-invincible="false"
+     data-shielded="false"
+     data-stunned="false"&gt;
+    PLAYER
+&lt;/div&gt;
+
+&lt;!-- Buttons that toggle power-ups --&gt;
+&lt;button data-state
+        data-state-trigger
+        data-state-bind="powerDemo"
+        data-state-toggle="powered"&gt;
+    Toggle Powered
+&lt;/button&gt;
+
+&lt;button data-state
+        data-state-trigger
+        data-state-bind="powerDemo"
+        data-state-toggle="invincible"&gt;
+    Toggle Invincible
+&lt;/button&gt;</pre>
+                </div>
+
+                <p><strong>Available power-up classes:</strong></p>
+                <ul>
+                    <li><code>.state-powered</code> - Golden glow pulse</li>
+                    <li><code>.state-invincible</code> - Shimmer effect</li>
+                    <li><code>.state-shielded</code> - Blue pulse shield</li>
+                    <li><code>.state-stunned</code> - Dizzy rotation</li>
+                </ul>
+            </div>
+
+            <!-- Level Up Example -->
+            <div class="example-section">
+                <h2>Tier/Level Change Animation</h2>
+                <p>Celebrate tier changes, level ups, or rank promotions with a bright flash animation. Great for games, achievement systems, subscription tiers, or user rankings.</p>
+
+                <h3>Live Demo</h3>
+                <div class="demo-preview">
+                    <div id="levelDemo"
+                         data-state-toggles="level-up"
+                         data-level-up="false"
+                         style="font-size: 64px; font-family: 'Bebas Neue';">
+                        Level 5
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <button class="button" data-state data-state-trigger data-state-bind="levelDemo" data-state-toggle="level-up">Trigger Level Up</button>
+                    </div>
+                </div>
+
+                <h3>How This Demo Works</h3>
+                <div class="code-example">
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    <pre>&lt;!-- Level display --&gt;
+&lt;div id="levelDemo"
+     data-state
+     data-state-toggles="level-up"
+     data-level-up="false"&gt;
+    Level 5
+&lt;/div&gt;
+
+&lt;!-- Button to trigger animation --&gt;
+&lt;button data-state
+        data-state-trigger
+        data-state-bind="levelDemo"
+        data-state-toggle="level-up"&gt;
+    Trigger Level Up
+&lt;/button&gt;</pre>
+                </div>
+            </div>
+
+            <!-- Status Effects Example -->
+            <div class="example-section">
+                <h2>Status Indicators</h2>
+                <p>Visual effects for different status states. Perfect for game effects (poisoned, frozen, burning, healing), system states (processing, syncing, error), or any conditional visual feedback.</p>
+
+                <h3>Live Demo</h3>
+                <div class="demo-preview">
+                    <div id="statusDemo"
+                         data-state-toggles="poisoned,frozen,burning,healing,cursed,blessed"
+                         data-poisoned="false"
+                         data-frozen="false"
+                         data-burning="false"
+                         data-healing="false"
+                         data-cursed="false"
+                         data-blessed="false"
+                         style="font-size: 64px; font-family: 'Bebas Neue';">
+                        PLAYER
+                    </div>
+                    <div style="margin-top: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
+                        <button class="button" data-state data-state-trigger data-state-bind="statusDemo" data-state-toggle="poisoned">Poisoned</button>
+                        <button class="button" data-state data-state-trigger data-state-bind="statusDemo" data-state-toggle="frozen">Frozen</button>
+                        <button class="button" data-state data-state-trigger data-state-bind="statusDemo" data-state-toggle="burning">Burning</button>
+                        <button class="button" data-state data-state-trigger data-state-bind="statusDemo" data-state-toggle="healing">Healing</button>
+                        <button class="button" data-state data-state-trigger data-state-bind="statusDemo" data-state-toggle="cursed">Cursed</button>
+                        <button class="button" data-state data-state-trigger data-state-bind="statusDemo" data-state-toggle="blessed">Blessed</button>
+                    </div>
+                </div>
+
+                <h3>How This Demo Works</h3>
+                <div class="code-example">
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    <pre>&lt;!-- Player with status effects --&gt;
+&lt;div id="statusDemo"
+     data-state
+     data-state-toggles="poisoned,frozen,burning,healing,cursed,blessed"
+     data-poisoned="false"
+     data-frozen="false"
+     data-burning="false"
+     data-healing="false"
+     data-cursed="false"
+     data-blessed="false"&gt;
+    PLAYER
+&lt;/div&gt;
+
+&lt;!-- Buttons to toggle status effects --&gt;
+&lt;button data-state
+        data-state-trigger
+        data-state-bind="statusDemo"
+        data-state-toggle="poisoned"&gt;
+    Poisoned
+&lt;/button&gt;
+
+&lt;button data-state
+        data-state-trigger
+        data-state-bind="statusDemo"
+        data-state-toggle="frozen"&gt;
+    Frozen
+&lt;/button&gt;</pre>
+                </div>
+
+                <p><strong>Available status effects:</strong></p>
+                <ul>
+                    <li><code>.state-poisoned</code> - Green hue pulse</li>
+                    <li><code>.state-frozen</code> - Blue tint with shake</li>
+                    <li><code>.state-burning</code> - Orange flicker</li>
+                    <li><code>.state-healing</code> - Green sparkle</li>
+                    <li><code>.state-cursed</code> - Dark pulsing</li>
+                    <li><code>.state-blessed</code> - Golden glow</li>
+                </ul>
+            </div>
+
+            <!-- UI Feedback Example -->
+            <div class="example-section">
+                <h2>UI Notifications</h2>
+                <p>Feedback animations for success, error, warning messages.</p>
+
+                <h3>Live Demo</h3>
+                <div class="demo-preview">
+                    <div id="notificationDemo"
+                         data-state-toggles="success,error,warning"
+                         data-success="false"
+                         data-error="false"
+                         data-warning="false"
+                         style="font-size: 48px; font-family: 'Bebas Neue'; min-height: 60px;">
+                        NOTIFICATION
+                    </div>
+                    <div style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
+                        <button class="button" data-state data-state-trigger data-state-bind="notificationDemo" data-state-toggle="success">Success</button>
+                        <button class="button" data-state data-state-trigger data-state-bind="notificationDemo" data-state-toggle="error">Error</button>
+                        <button class="button" data-state data-state-trigger data-state-bind="notificationDemo" data-state-toggle="warning">Warning</button>
+                    </div>
+                </div>
+
+                <h3>How This Demo Works</h3>
+                <div class="code-example">
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    <pre>&lt;!-- Notification element --&gt;
+&lt;div id="notificationDemo"
+     data-state
+     data-state-toggles="success,error,warning"
+     data-success="false"
+     data-error="false"
+     data-warning="false"&gt;
+    NOTIFICATION
+&lt;/div&gt;
+
+&lt;!-- Buttons to trigger animations --&gt;
+&lt;button data-state
+        data-state-trigger
+        data-state-bind="notificationDemo"
+        data-state-toggle="success"&gt;
+    Success
+&lt;/button&gt;
+
+&lt;button data-state
+        data-state-trigger
+        data-state-bind="notificationDemo"
+        data-state-toggle="error"&gt;
+    Error
+&lt;/button&gt;</pre>
+                </div>
+
+                <p><strong>Available notification classes:</strong></p>
+                <ul>
+                    <li><code>.state-success</code> - Bounce in</li>
+                    <li><code>.state-error</code> - Shake animation</li>
+                    <li><code>.state-warning</code> - Shake warning</li>
+                    <li><code>.state-notification</code> - Slide in</li>
+                </ul>
+            </div>
+
+            <!-- Ready-to-Go Game Examples -->
+            <div class="example-section">
+                <h2>Complete UI System Examples</h2>
+                <p>Ready-to-use interactive components built with State.js alone. These examples demonstrate game mechanics, but the same patterns work for any interactive UI. Copy, paste, and customize!</p>
+
+                <!-- Health System with Regeneration -->
+                <h3>Health System</h3>
+                <div class="demo-preview">
+                    <div id="regenDemo"
+                         data-state-watch="health"
+                         data-state-var="true"
+                         data-health="50"
+                         data-health-min="0"
+                         data-health-max="100"
+                         style="width: 400px;">
+
+                        <div style="background: #222; padding: 20px; border-radius: 10px;">
+                            <div style="margin-bottom: 15px; font-size: 18px;">
+                                Health: <span data-state-display="health">50</span> / 100
+                            </div>
+
+                            <div style="background: #444; height: 30px; border-radius: 15px; overflow: hidden; margin-bottom: 15px;">
+                                <div class="health-bar" style="background: linear-gradient(90deg, #700c0c 0%, #ff4444 50%, #44ff44 100%);
+                                           height: 100%;
+                                           width: var(--state-health-percent);
+                                           transition: width 0.3s;">
+                                </div>
+                            </div>
+
+                            <div style="display: flex; gap: 10px; justify-content: center;">
+                                <button class="button" data-state data-state-trigger data-state-bind="regenDemo" data-state-attr="health" data-state-value="25">Damage</button>
+                                <button class="button" data-state data-state-trigger data-state-bind="regenDemo" data-state-attr="health" data-state-value="100">Heal</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <details style="margin: 20px 0;">
+                    <summary style="cursor: pointer; padding: 10px; background: #1a1a1a; border-radius: 5px; font-weight: bold;">Show Code</summary>
+                    <div class="code-example">
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        <pre>&lt;div id="player"
+     data-state-watch="health"
+     data-state-var="true"
+     data-health="100"
+     data-health-min="0"
+     data-health-max="100"&gt;
+
+    &lt;!-- Health Display --&gt;
+    &lt;div&gt;Health: &lt;span data-state-display="health"&gt;100&lt;/span&gt; / 100&lt;/div&gt;
+
+    &lt;!-- Health Bar --&gt;
+    &lt;div class="health-bar-container"&gt;
+        &lt;div class="health-bar" style="width: var(--state-health-percent);"&gt;&lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;!-- Controls --&gt;
+    &lt;button data-state data-state-trigger data-state-bind="player"
+            data-state-attr="health" data-state-value="50"&gt;Take Damage&lt;/button&gt;
+    &lt;button data-state data-state-trigger data-state-bind="player"
+            data-state-attr="health" data-state-value="100"&gt;Heal&lt;/button&gt;
+&lt;/div&gt;
+
+&lt;style&gt;
+    .health-bar-container {
+        background: #444;
+        height: 30px;
+        border-radius: 15px;
+        overflow: hidden;
+    }
+    .health-bar {
+        background: linear-gradient(90deg, red 0%, yellow 50%, green 100%);
+        height: 100%;
+        transition: width 0.3s;
+    }
+
+    /* Auto-regeneration animation */
+    .state-regenerating .health-bar {
+        animation: regen-pulse 2s infinite;
+    }
+
+    @keyframes regen-pulse {
+        0%, 100% { filter: brightness(1); }
+        50% { filter: brightness(1.5); }
+    }
+&lt;/style&gt;</pre>
+                    </div>
+                </details>
+
+
+                <!-- Inventory Toggle System -->
+                <h3>Inventory Toggle System</h3>
+                <div class="demo-preview">
+                    <div id="inventoryDemo"
+                         data-state-toggles="sword,shield,potion,key"
+                         data-sword="false"
+                         data-shield="false"
+                         data-potion="false"
+                         data-key="false"
+                         style="width: 500px;">
+
+                        <div style="background: #222; padding: 20px; border-radius: 10px;">
+                            <h3 style="margin-top: 0;">Inventory</h3>
+
+                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px;">
+                                <div style="background: #333; padding: 15px; border-radius: 8px; text-align: center; transition: all 0.3s;">
+                                    <div style="font-size: 40px; margin-bottom: 10px;">⚔️</div>
+                                    <div>Sword</div>
+                                    <div style="font-size: 12px; opacity: 0.7; margin-top: 5px;">
+                                        Status: <span data-state-display="sword">false</span>
+                                    </div>
+                                </div>
+                                <div style="background: #333; padding: 15px; border-radius: 8px; text-align: center; transition: all 0.3s;">
+                                    <div style="font-size: 40px; margin-bottom: 10px;">🛡️</div>
+                                    <div>Shield</div>
+                                    <div style="font-size: 12px; opacity: 0.7; margin-top: 5px;">
+                                        Status: <span data-state-display="shield">false</span>
+                                    </div>
+                                </div>
+                                <div style="background: #333; padding: 15px; border-radius: 8px; text-align: center; transition: all 0.3s;">
+                                    <div style="font-size: 40px; margin-bottom: 10px;">🧪</div>
+                                    <div>Potion</div>
+                                    <div style="font-size: 12px; opacity: 0.7; margin-top: 5px;">
+                                        Status: <span data-state-display="potion">false</span>
+                                    </div>
+                                </div>
+                                <div style="background: #333; padding: 15px; border-radius: 8px; text-align: center; transition: all 0.3s;">
+                                    <div style="font-size: 40px; margin-bottom: 10px;">🔑</div>
+                                    <div>Key</div>
+                                    <div style="font-size: 12px; opacity: 0.7; margin-top: 5px;">
+                                        Status: <span data-state-display="key">false</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                                <button class="button" data-state data-state-trigger data-state-bind="inventoryDemo" data-state-toggle="sword">Toggle Sword</button>
+                                <button class="button" data-state data-state-trigger data-state-bind="inventoryDemo" data-state-toggle="shield">Toggle Shield</button>
+                                <button class="button" data-state data-state-trigger data-state-bind="inventoryDemo" data-state-toggle="potion">Toggle Potion</button>
+                                <button class="button" data-state data-state-trigger data-state-bind="inventoryDemo" data-state-toggle="key">Toggle Key</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <details style="margin: 20px 0;">
+                    <summary style="cursor: pointer; padding: 10px; background: #1a1a1a; border-radius: 5px; font-weight: bold;">Show Code</summary>
+                    <div class="code-example">
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        <pre>&lt;div id="inventory"
+     data-state-toggles="sword,shield,potion,key"
+     data-sword="false"
+     data-shield="false"
+     data-potion="false"
+     data-key="false"&gt;
+
+    &lt;div class="item" id="sword-slot"&gt;
+        &lt;div class="icon"&gt;⚔️&lt;/div&gt;
+        &lt;div&gt;Sword: &lt;span data-state-display="sword"&gt;false&lt;/span&gt;&lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div class="item" id="shield-slot"&gt;
+        &lt;div class="icon"&gt;🛡️&lt;/div&gt;
+        &lt;div&gt;Shield: &lt;span data-state-display="shield"&gt;false&lt;/span&gt;&lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;!-- Buttons to collect items --&gt;
+    &lt;button data-state data-state-trigger data-state-bind="inventory"
+            data-state-toggle="sword"&gt;Toggle Sword&lt;/button&gt;
+    &lt;button data-state data-state-trigger data-state-bind="inventory"
+            data-state-toggle="shield"&gt;Toggle Shield&lt;/button&gt;
+&lt;/div&gt;
+
+&lt;style&gt;
+    .item {
+        background: #333;
+        padding: 15px;
+        border-radius: 8px;
+        transition: all 0.3s;
+    }
+
+    /* Highlight collected items */
+    .state-sword #sword-slot,
+    .state-shield #shield-slot,
+    .state-potion #potion-slot,
+    .state-key #key-slot {
+        background: #700c0c;
+        transform: scale(1.05);
+        box-shadow: 0 0 20px rgba(112, 12, 12, 0.6);
+    }
+&lt;/style&gt;</pre>
+                    </div>
+                </details>
+
+                <!-- Menu System -->
+                <h3>Game Menu System</h3>
+                <div class="demo-preview">
+                    <div id="menuDemo"
+                         data-state-toggles="menuOpen,settingsOpen,creditsOpen"
+                         data-menuOpen="false"
+                         data-settingsOpen="false"
+                         data-creditsOpen="false"
+                         style="width: 500px;">
+
+                        <div style="background: #222; padding: 20px; border-radius: 10px; position: relative;">
+                            <div style="text-align: center; margin-bottom: 20px;">
+                                <button class="button" data-state data-state-trigger data-state-bind="menuDemo" data-state-toggle="menuOpen">Toggle Main Menu</button>
+                            </div>
+
+                            <div id="mainMenu" style="background: #1a1a1a; padding: 20px; border-radius: 10px; display: none;">
+                                <h3 style="margin-top: 0; text-align: center;">Main Menu</h3>
+                                <div style="display: flex; flex-direction: column; gap: 10px;">
+                                    <button class="button">New Game</button>
+                                    <button class="button">Continue</button>
+                                    <button class="button" data-state data-state-trigger data-state-bind="menuDemo" data-state-toggle="settingsOpen">Settings</button>
+                                    <button class="button" data-state data-state-trigger data-state-bind="menuDemo" data-state-toggle="creditsOpen">Credits</button>
+                                    <button class="button" data-state data-state-trigger data-state-bind="menuDemo" data-state-toggle="menuOpen">Close</button>
+                                </div>
+                            </div>
+
+                            <div id="settingsMenu" style="background: #1a1a1a; padding: 20px; border-radius: 10px; display: none;">
+                                <h3 style="margin-top: 0;">Settings</h3>
+                                <div style="margin-bottom: 15px;">
+                                    <label>Volume: <input type="range" min="0" max="100" value="50" style="width: 100%;"></label>
+                                </div>
+                                <div style="margin-bottom: 15px;">
+                                    <label><input type="checkbox"> Enable Sound</label>
+                                </div>
+                                <button class="button" data-state data-state-trigger data-state-bind="menuDemo" data-state-toggle="settingsOpen">Back</button>
+                            </div>
+
+                            <div id="creditsMenu" style="background: #1a1a1a; padding: 20px; border-radius: 10px; display: none;">
+                                <h3 style="margin-top: 0;">Credits</h3>
+                                <p style="text-align: center;">Game developed with State.js</p>
+                                <p style="text-align: center; font-size: 12px; opacity: 0.7;">by iDev Games</p>
+                                <button class="button" data-state data-state-trigger data-state-bind="menuDemo" data-state-toggle="creditsOpen">Back</button>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <details style="margin: 20px 0;">
+                    <summary style="cursor: pointer; padding: 10px; background: #1a1a1a; border-radius: 5px; font-weight: bold;">Show Code</summary>
+                    <div class="code-example">
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        <pre>&lt;div id="gameMenu"
+     data-state-toggles="menuOpen,settingsOpen,creditsOpen"
+     data-menuOpen="false"
+     data-settingsOpen="false"
+     data-creditsOpen="false"&gt;
+
+    &lt;button data-state data-state-trigger data-state-bind="gameMenu"
+            data-state-toggle="menuOpen"&gt;Toggle Menu&lt;/button&gt;
+
+    &lt;div id="mainMenu"&gt;
+        &lt;h3&gt;Main Menu&lt;/h3&gt;
+        &lt;button&gt;New Game&lt;/button&gt;
+        &lt;button&gt;Continue&lt;/button&gt;
+        &lt;button data-state data-state-trigger data-state-bind="gameMenu"
+                data-state-toggle="settingsOpen"&gt;Settings&lt;/button&gt;
+        &lt;button data-state data-state-trigger data-state-bind="gameMenu"
+                data-state-toggle="creditsOpen"&gt;Credits&lt;/button&gt;
+    &lt;/div&gt;
+
+    &lt;div id="settingsMenu"&gt;
+        &lt;h3&gt;Settings&lt;/h3&gt;
+        &lt;!-- Settings content --&gt;
+        &lt;button data-state data-state-trigger data-state-bind="gameMenu"
+                data-state-toggle="settingsOpen"&gt;Back&lt;/button&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;style&gt;
+    #mainMenu, #settingsMenu, #creditsMenu {
+        display: none;
+        opacity: 0;
+        transform: translateY(-20px);
+        transition: all 0.3s;
+    }
+
+    /* Show menu when menuOpen is true */
+    .state-menuOpen #mainMenu {
+        display: block;
+        animation: menu-slide-in 0.3s forwards;
+    }
+
+    .state-settingsOpen #settingsMenu {
+        display: block;
+        animation: menu-slide-in 0.3s forwards;
+    }
+
+    .state-creditsOpen #creditsMenu {
+        display: block;
+        animation: menu-slide-in 0.3s forwards;
+    }
+
+    @keyframes menu-slide-in {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+&lt;/style&gt;</pre>
+                    </div>
+                </details>
+
+                <!-- Simple Dialogue System -->
+                <h3>Dialogue System</h3>
+                <div class="demo-preview">
+                    <div id="dialogueDemo"
+                         data-state-toggles="dialogueActive,choice1,choice2"
+                         data-state-watch="dialogueStep"
+                         data-dialogueActive="false"
+                         data-choice1="false"
+                         data-choice2="false"
+                         data-dialogueStep="0"
+                         data-dialogueStep-min="0"
+                         data-dialogueStep-max="5"
+                         style="width: 500px;">
+
+                        <div style="background: #222; padding: 20px; border-radius: 10px;">
+                            <button class="button" data-state data-state-trigger data-state-bind="dialogueDemo" data-state-toggle="dialogueActive">Start Dialogue</button>
+
+                            <div id="dialogueBox" style="background: #1a1a1a; padding: 20px; border-radius: 10px; margin-top: 20px; display: none;">
+                                <div style="font-weight: bold; margin-bottom: 10px; color: #700c0c;">NPC:</div>
+                                <div style="line-height: 1.6; margin-bottom: 20px;">
+                                    "Welcome, traveler! How can I help you today?"
+                                </div>
+
+                                <div style="display: flex; flex-direction: column; gap: 10px;">
+                                    <button class="button" data-state data-state-trigger data-state-bind="dialogueDemo" data-state-toggle="choice1">Ask about the quest</button>
+                                    <button class="button" data-state data-state-trigger data-state-bind="dialogueDemo" data-state-toggle="choice2">Ask about the town</button>
+                                    <button class="button" data-state data-state-trigger data-state-bind="dialogueDemo" data-state-toggle="dialogueActive">Goodbye</button>
+                                </div>
+                            </div>
+
+                            <div id="response1" style="background: #1a1a1a; padding: 20px; border-radius: 10px; margin-top: 20px; display: none;">
+                                <div style="font-weight: bold; margin-bottom: 10px; color: #700c0c;">NPC:</div>
+                                <div style="line-height: 1.6; margin-bottom: 20px;">
+                                    "Ah yes, the ancient ruins to the north! Beware the creatures that lurk there..."
+                                </div>
+                                <button class="button" data-state data-state-trigger data-state-bind="dialogueDemo" data-state-toggle="choice1">Back</button>
+                            </div>
+
+                            <div id="response2" style="background: #1a1a1a; padding: 20px; border-radius: 10px; margin-top: 20px; display: none;">
+                                <div style="font-weight: bold; margin-bottom: 10px; color: #700c0c;">NPC:</div>
+                                <div style="line-height: 1.6; margin-bottom: 20px;">
+                                    "This town has stood for centuries. We're known for our skilled blacksmiths!"
+                                </div>
+                                <button class="button" data-state data-state-trigger data-state-bind="dialogueDemo" data-state-toggle="choice2">Back</button>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <details style="margin: 20px 0;">
+                    <summary style="cursor: pointer; padding: 10px; background: #1a1a1a; border-radius: 5px; font-weight: bold;">Show Code</summary>
+                    <div class="code-example">
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        <pre>&lt;div id="dialogue"
+     data-state-toggles="dialogueActive,choice1,choice2"
+     data-dialogueActive="false"
+     data-choice1="false"
+     data-choice2="false"&gt;
+
+    &lt;button data-state data-state-trigger data-state-bind="dialogue"
+            data-state-toggle="dialogueActive"&gt;Talk to NPC&lt;/button&gt;
+
+    &lt;div id="dialogueBox"&gt;
+        &lt;div class="npc-name"&gt;NPC:&lt;/div&gt;
+        &lt;div class="dialogue-text"&gt;
+            "Welcome, traveler! How can I help you?"
+        &lt;/div&gt;
+
+        &lt;button data-state data-state-trigger data-state-bind="dialogue"
+                data-state-toggle="choice1"&gt;Ask about quest&lt;/button&gt;
+        &lt;button data-state data-state-trigger data-state-bind="dialogue"
+                data-state-toggle="choice2"&gt;Ask about town&lt;/button&gt;
+        &lt;button data-state data-state-trigger data-state-bind="dialogue"
+                data-state-toggle="dialogueActive"&gt;Goodbye&lt;/button&gt;
+    &lt;/div&gt;
+
+    &lt;div id="response1"&gt;
+        &lt;div class="dialogue-text"&gt;"Ah yes, the ancient ruins..."&lt;/div&gt;
+        &lt;button data-state data-state-trigger data-state-bind="dialogue"
+                data-state-toggle="choice1"&gt;Back&lt;/button&gt;
+    &lt;/div&gt;
+
+    &lt;div id="response2"&gt;
+        &lt;div class="dialogue-text"&gt;"This town has stood for centuries..."&lt;/div&gt;
+        &lt;button data-state data-state-trigger data-state-bind="dialogue"
+                data-state-toggle="choice2"&gt;Back&lt;/button&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;style&gt;
+    #dialogueBox, #response1, #response2 {
+        display: none;
+        opacity: 0;
+    }
+
+    /* Show dialogue box when active */
+    .state-dialogueActive #dialogueBox {
+        display: block;
+        animation: dialogue-fade-in 0.3s forwards;
+    }
+
+    /* Show responses when choices selected */
+    .state-choice1 #response1,
+    .state-choice2 #response2 {
+        display: block;
+        animation: dialogue-fade-in 0.3s forwards;
+    }
+
+    /* Hide main dialogue when viewing responses */
+    .state-choice1 #dialogueBox,
+    .state-choice2 #dialogueBox {
+        display: none;
+    }
+
+    @keyframes dialogue-fade-in {
+        to { opacity: 1; }
+    }
+
+    .dialogue-text {
+        background: #1a1a1a;
+        padding: 20px;
+        border-radius: 10px;
+        margin: 10px 0;
+        border-left: 4px solid #700c0c;
+    }
+&lt;/style&gt;</pre>
+                    </div>
+                </details>
+
+                <!-- Enemy State Machine -->
+                <h3>Enemy State Machine</h3>
+                <div class="demo-preview">
+                    <div id="enemyDemo"
+                         data-state-toggles="idle,attacking,stunned,defeated"
+                         data-state-watch="enemyHealth"
+                         data-state-var="true"
+                         data-idle="true"
+                         data-attacking="false"
+                         data-stunned="false"
+                         data-defeated="false"
+                         data-enemyHealth="100"
+                         data-enemyHealth-min="0"
+                         data-enemyHealth-max="100"
+                         style="width: 400px;">
+
+                        <div style="background: #222; padding: 20px; border-radius: 10px; text-align: center;">
+                            <div style="font-size: 64px; margin-bottom: 20px;">👾</div>
+
+                            <div style="margin-bottom: 15px;">
+                                <strong>Enemy Health:</strong> <span data-state-display="enemyHealth">100</span>
+                            </div>
+
+                            <div style="background: #444; height: 20px; border-radius: 10px; overflow: hidden; margin-bottom: 20px;">
+                                <div style="background: linear-gradient(90deg, #700c0c 0%, #ff4444 100%);
+                                           height: 100%;
+                                           width: var(--state-enemyHealth-percent);
+                                           transition: width 0.3s;">
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                                <button class="button" onclick="damageEnemy(25)">Damage Enemy</button>
+                                <button class="button" data-state data-state-trigger data-state-bind="enemyDemo" data-state-toggle="attacking">Toggle Attack</button>
+                                <button class="button" data-state data-state-trigger data-state-bind="enemyDemo" data-state-toggle="stunned">Toggle Stun</button>
+                                <button class="button" data-state data-state-trigger data-state-bind="enemyDemo" data-state-attr="enemyHealth" data-state-value="0">Defeat</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <details style="margin: 20px 0;">
+                    <summary style="cursor: pointer; padding: 10px; background: #1a1a1a; border-radius: 5px; font-weight: bold;">Show Code</summary>
+                    <div class="code-example">
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        <pre>&lt;div id="enemy"
+     data-state-toggles="idle,attacking,stunned,defeated"
+     data-state-watch="enemyHealth"
+     data-state-var="true"
+     data-idle="true"
+     data-attacking="false"
+     data-stunned="false"
+     data-defeated="false"
+     data-enemyHealth="100"
+     data-enemyHealth-min="0"
+     data-enemyHealth-max="100"&gt;
+
+    &lt;div class="enemy-sprite"&gt;👾&lt;/div&gt;
+
+    &lt;div class="health-bar-container"&gt;
+        &lt;div class="health-bar" style="width: var(--state-enemyHealth-percent);"&gt;&lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;button data-state data-state-trigger data-state-bind="enemy"
+            data-state-attr="enemyHealth" data-state-value="50"&gt;Attack&lt;/button&gt;
+    &lt;button data-state data-state-trigger data-state-bind="enemy"
+            data-state-toggle="stunned"&gt;Stun&lt;/button&gt;
+&lt;/div&gt;
+
+&lt;style&gt;
+    .enemy-sprite {
+        font-size: 64px;
+        transition: all 0.3s;
+    }
+
+    /* Idle state - gentle bounce */
+    .state-idle .enemy-sprite {
+        animation: enemy-idle 2s ease-in-out infinite;
+    }
+
+    /* Attacking state - shake */
+    .state-attacking .enemy-sprite {
+        animation: enemy-attack 0.5s linear infinite;
+    }
+
+    /* Stunned state - dizzy */
+    .state-stunned .enemy-sprite {
+        animation: stunned-dizzy 0.3s linear infinite;
+    }
+
+    /* Defeated state */
+    [data-enemyHealth="0"] .enemy-sprite {
+        animation: death 2s ease-out forwards;
+    }
+
+    @keyframes enemy-idle {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+
+    @keyframes enemy-attack {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-10px); }
+        75% { transform: translateX(10px); }
+    }
+&lt;/style&gt;</pre>
+                    </div>
+                </details>
+
+            </div>
+
+            <!-- Installation -->
+            <div class="example-section">
+                <h2>Installation</h2>
+
+                <h3>1. Include the files</h3>
+                <div class="code-example">
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    <pre>&lt;script src="state.js"&gt;&lt;/script&gt;
+&lt;link rel="stylesheet" href="state-animations.css"&gt;</pre>
+                </div>
+
+                <h3>2. Add data-state to elements</h3>
+                <div class="code-example">
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    <pre>&lt;div data-state data-state-watch="health" data-health="100"&gt;
+    &lt;!-- Your game UI --&gt;
+&lt;/div&gt;</pre>
+                </div>
+
+                <h3>3. Use CSS variables or add classes</h3>
+                <div class="code-example">
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    <pre>/* Use CSS variables */
+.health-bar {
+    width: var(--state-health-percent);
+}
+
+/* Or add animation classes */
+element.classList.add('state-powered');</pre>
+                </div>
+            </div>
+
+            <div class="back-link">
+                <a href="index.html">← Back to State.js Documentation</a>
+            </div>
+        </div>
+
+        <script>
+            function copyCode(button) {
+                const codeBlock = button.nextElementSibling;
+                const code = codeBlock.textContent;
+                navigator.clipboard.writeText(code).then(() => {
+                    const originalText = button.textContent;
+                    button.textContent = 'Copied!';
+                    setTimeout(() => {
+                        button.textContent = originalText;
+                    }, 2000);
+                });
+            }
+        </script>
+
+    </body>
+</html>

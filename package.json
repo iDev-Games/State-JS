@@ -1,0 +1,37 @@
+{
+  "name": "@idevgames/state-js",
+  "version": "1.0.0",
+  "description": "State.js exposes DOM element states as CSS variables for data-driven animations and game development. Track data attributes, form inputs, media playback, and visibility - the missing piece for pure CSS/HTML game development.",
+  "main": "src/state.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iDev-Games/State-JS.git"
+  },
+  "keywords": [
+    "state",
+    "css-variables",
+    "game-development",
+    "data-driven",
+    "animation",
+    "reactive",
+    "html5-games",
+    "css-animations",
+    "state-management",
+    "data-attributes",
+    "css",
+    "html",
+    "javascript",
+    "game-ui",
+    "declarative",
+    "css-first"
+  ],
+  "author": "iDev Games",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/iDev-Games/State-JS/issues"
+  },
+  "homepage": "https://github.com/iDev-Games/State-JS#readme",
+  "publishConfig": {
+    "@iDev-Games:registry": "https://npm.pkg.github.com"
+  }
+}

@@ -1,0 +1,692 @@
+<html>
+    <head>
+        <title>State.js Documentation</title>
+
+        <!-- State JS -->
+        <script src="src/state.js"></script>
+
+        <!-- State Animations CSS -->
+        <link rel="stylesheet" href="src/state-animations.css">
+
+        <!-- Google Fonts -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+        <!--End Fonts -->
+
+        <!-- Mobile viewport meta tag -->
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+        <!-- Styles -->
+        <style>
+            body{
+                margin:0px;
+                padding:0px;
+                background-color:#060606;
+                color:#FFF;
+                font-family: 'Space Mono', monospace;
+            }
+            a{
+                color:#FFF;
+            }
+            hr{
+                margin:0px;
+            }
+            .state.background1{
+                overflow:hidden;
+            }
+            .state.background1:after{
+                content:"";
+                width:100%;
+                height:100%;
+                position:absolute;
+                top:0;
+                left:0;
+                background-image:url("assets/img/clouds.png");
+                background-size: cover;
+                background-repeat: no-repeat;
+                background-position: 0;
+                opacity: 9;
+                transition:transform ease-out 0.3s;
+            }
+            .state.background2{
+                overflow:hidden;
+            }
+            .state.background2:before{
+                content:"";
+                width:400%;
+                height:100%;
+                position:absolute;
+                top:0;
+                left:0;
+                background-image:url("assets/img/plane.jpg");
+                background-size: contain;
+                background-repeat: no-repeat;
+                background-position: 0;
+                transform:translateX(calc(var(--state-viewport-x) - 40%)) translateY(calc(var(--state-viewport-y) - 10%));
+                opacity: 0.1;
+                transition:transform ease-out 0.3s;
+            }
+            .state.background2:after{
+                content: "";
+                width: 100%;
+                height: 100%;
+                position: absolute;
+                top: 0;
+                left: 0;
+                background: rgb(63,210,251);
+                background: linear-gradient(0deg, rgba(63,210,251,0) 0%, rgba(196,241,255,1) 50%);
+                opacity: var(--state-intersection);
+                transition:opacity ease-out 0.3s;
+            }
+            .state.background3{
+                overflow:hidden;
+            }
+            .state.background3 div{
+                position: relative;
+                z-index:3;
+            }
+            .state.background3:before{
+                content:"";
+                width:100%;
+                height:100%;
+                position:absolute;
+                top:0;
+                left:0;
+                background-image:url("assets/img/planet1.jpg");
+                background-size: cover;
+                background-repeat: no-repeat;
+                background-position: 0;
+                opacity: 0.8;
+            }
+            .state.background3:after{
+                content:"";
+                width:100%;
+                height:100%;
+                position:absolute;
+                top:0;
+                left:0;
+                background: rgb(63,210,251);
+                background: linear-gradient(194deg, rgba(63,210,251,0) 0%, rgba(0,0,0,1) 100%);
+                background-position: 0;
+                opacity: calc(var(--state-intersection) + 50%);
+                z-index:0;
+            }
+            .state.background4{
+                overflow:hidden;
+            }
+            .state.background4:before{
+                content:"";
+                width:200%;
+                height:100%;
+                position:absolute;
+                top:0;
+                left:0px;
+                background-image:url("assets/img/wheel.png");
+                background-size: contain;
+                background-position: center;
+                background-repeat: no-repeat;
+                opacity: 0.8;
+                transition:all ease-out 2s;
+            }
+            .state.background5{
+                overflow:hidden;
+                transition:all ease-out 0.3s;
+            }
+            .state.background5:before{
+                content:"";
+                width:200%;
+                height:100%;
+                position:absolute;
+                top:0;
+                left:0px;
+                background-image:url("assets/img/living-room.jpg");
+                background-size: cover;
+                background-position: left bottom;
+                background-repeat: no-repeat;
+                mix-blend-mode: screen;
+                transition:transform ease-out 1s;
+            }
+            .state.background6{
+                overflow:hidden;
+                background:rgba(255,255,255, 0.2);
+                transition:opacity ease-out 0.3s;
+            }
+            .state.background6:before{
+                content:"";
+                width:100%;
+                height:200%;
+                position:absolute;
+                top:0;
+                left:0px;
+                background-image:url("assets/img/skyscraper.jpg");
+                background-size:200%;
+                background-position: center top;
+                background-repeat: no-repeat;
+                mix-blend-mode: screen;
+                transition:transform ease-out 1s;
+            }
+            .state.background7{
+                overflow:hidden;
+            }
+            .state.background7:before{
+                content:"";
+                width:100%;
+                height:100%;
+                clip-path: rect(0% 100% var(--state-intersection) 0%);
+                position:absolute;
+                top:0;
+                left:0px;
+                background: rgb(252,176,69);
+                background: linear-gradient(0deg, rgba(252,176,69,1) 25%, rgba(253,124,41,1) 25%, rgba(253,124,41,1) 50%, rgba(253,29,29,1) 50%, rgba(253,29,29,1) 75%, rgba(208,0,0,1) 75%);
+                background-size: 100vw 100vh;
+                background-position:top;
+                background-repeat: no-repeat;
+                transition:clip-path ease-out 0.7s;
+            }
+            .state.background8{
+                overflow:hidden;
+                background:rgba(255,255,255,calc(var(--state-intersection) - 40%));
+            }
+            .state.background8:before{
+                content:"";
+                width:100%;
+                height:100%;
+                position:absolute;
+                top:0;
+                left:0px;
+                background-image:url("assets/img/servers.jpg");
+                background-size: 100vw 100vh;
+                background-position: center top;
+                background-repeat: no-repeat;
+                filter: blur(calc((var(--state-intersection) / 5) - 10px));
+            }
+            .state.background9{
+                overflow:hidden;
+                background: #111111;
+            }
+            .state.background9:before{
+                content: "";
+                width: 100%;
+                height: 100%;
+                position: absolute;
+                top: 0;
+                left: 0px;
+                background: #0b0a0a;
+                background-size: 100vw 100vh;
+                background-position: center top;
+                background-repeat: no-repeat;
+                transform: translateY(calc(var(--state-intersection) * 2.5));
+                transition:transform ease-out 0.4s;
+            }
+            .pageContainer{
+                max-width:100%;
+                overflow:hidden;
+            }
+            .container{
+                background-color:#060606;
+                width:100%;
+                min-height:100vh;
+                position:relative;
+                margin:auto;
+                display:flex;
+                align-items: center;
+                justify-content: center;
+                flex-direction: column;
+                max-width: 1800px;
+            }
+            hr{
+                border-color:#AAAAAA;
+            }
+            pre{
+                font-size: 22px;
+                white-space: pre-line;
+                background-color: #111;
+                padding: 20px;
+            }
+            .box{
+                position:relative;
+                display: inline-block;
+                width:auto;
+                margin:auto;
+                margin:20px;
+                padding:20px;
+                max-width: 100%;
+            }
+            .boxBG{
+                background-color: rgba(0, 0, 0, 0.8);
+            }
+            .alignCenter{
+                text-align:center;
+            }
+            h1, .stateText{
+                font-family: 'Bebas Neue', cursive;
+                color: #700c0c;
+                text-shadow: 2px 2px 2px #000000;
+                font-size:72px;
+            }
+            #logo{
+                transition: transform ease-out 0.3s;
+            }
+            .listItem{
+                font-size: 20px;
+                background-color: #111;
+                padding: 20px;
+                display:inline-block;
+                margin-top:10px;
+            }
+            .headerText{
+                font-family: 'Bebas Neue', cursive;
+                color: #FFF;
+                text-shadow: 2px 2px 2px #000000;
+                font-size:52px;
+                width:238px;
+            }
+            .moreExamples{
+                display: inline-block;
+                margin: auto;
+                background-color: #F1F1F1;
+                color: #060606;
+                font-weight: bold;
+                padding: 10px 45px;
+                text-decoration: none;
+            }
+            #headerLine{
+                transition: transform ease-out 0.3s;
+            }
+            #headerLine2{
+                background:#AAAAAA;
+                width:200px;
+                transition: transform ease-out 0.3s;
+            }
+            #Whatis{
+                width:100%;
+                z-index:2;
+                transition: transform ease-out 0.3s;
+            }
+            #creative{
+                transition:all ease-out 0.8s;
+            }
+            #withcss{
+                transition:all ease-out 0.8s;
+            }
+            .fadeIn{
+                opacity:0;
+            }
+            .fadeIn.state{
+                animation: fadeIn 1s normal forwards ease-in-out;
+            }
+            .fadeIn.animdelay1{
+                animation-delay: 0.25s;
+            }
+            .fadeIn.animdelay2{
+                animation-delay: 0.5s;
+            }
+            @keyframes fadeIn {
+                0% {
+                    opacity:0;
+                }
+                100% {
+                    opacity:1;
+                }
+            }
+
+            /* Interactive Demo Styles */
+            .demo-interactive {
+                background: #1a1a1a;
+                padding: 30px;
+                border-radius: 10px;
+                margin: 20px;
+            }
+            .health-bar-demo {
+                width: 300px;
+                height: 40px;
+                background: #333;
+                border-radius: 20px;
+                overflow: hidden;
+                position: relative;
+                margin: 20px auto;
+            }
+            .health-bar-fill {
+                height: 100%;
+                background: linear-gradient(90deg, #ff0000 0%, #ffff00 50%, #00ff00 100%);
+                width: var(--state-health-percent);
+                transition: width 0.3s ease-out;
+            }
+            .slider-demo {
+                width: 300px;
+                margin: 20px auto;
+            }
+            .slider-demo input[type="range"] {
+                width: 100%;
+                height: 8px;
+                background: #333;
+                border-radius: 5px;
+                outline: none;
+            }
+            .value-display {
+                font-family: 'Bebas Neue', cursive;
+                font-size: 48px;
+                color: #700c0c;
+                text-shadow: 2px 2px 2px #000000;
+                margin: 10px 0;
+            }
+            .code-box {
+                background: #000;
+                padding: 20px;
+                border-radius: 8px;
+                margin: 20px 0;
+                border: 1px solid #333;
+                overflow-x: auto;
+            }
+            .code-box pre {
+                margin: 0;
+                color: #e8e8e8;
+                font-family: 'Courier New', monospace;
+                font-size: 13px;
+                line-height: 1.6;
+            }
+
+            @media screen and (min-width: 768px) {
+                #documentation{
+                    transform:translateY(calc(var(--state-intersection) * 4));
+                    transition: transform ease-out 0.3s;
+                }
+                #textBlock{
+                    transform:translateY(var(--state-intersection));
+                    transition: transform ease-out 0.3s;
+                }
+                .title{
+                    transition: transform ease-out 0.3s;
+                }
+                .headerText{
+                    font-size:122px;
+                    width: 100%;
+                }
+                #examples{
+                    position:relative;
+                    z-index:2;
+                    transform:translateY(calc(var(--state-intersection) * 2));
+                    transition:transform ease-out 0.3s;
+                }
+            }
+        </style>
+        <!-- End of styles -->
+
+    </head>
+    <body>
+        <div class="pageContainer">
+
+            <div class="container alignCenter background1">
+                <div class="box">
+                    <h1 id="logo">State.js</h1>
+
+                    <hr id="headerLine" />
+
+                    <h2 id="documentation">Documentation <sup>v1.0.0</sup></h2>
+                </div>
+            </div>
+
+            <hr/>
+
+            <div class="container alignCenter background2">
+                <div class="box" id="Whatis">
+                    <h2>What is State.js?</h2>
+                </div>
+                <hr id="headerLine2"/>
+                <div id="textBlock">
+                    <div class="box boxBG fadeIn" data-state>
+                        State.js is a super simple, efficient and lightweight CSS framework that exposes DOM element states as CSS variables. Track data attributes, form inputs, media playback, and element visibility - all automatically exposed for use in your CSS animations and transitions.
+                    </div>
+                    <div class="box boxBG fadeIn animdelay1" data-state>
+                        Using nothing but the power of CSS, HTML and State.js, you can create dynamic dashboards, reactive web applications, and interactive experiences! State.js is really lightweight and created with javascript without requiring any dependencies.
+                    </div>
+                    <div class="box boxBG fadeIn animdelay2" data-state>
+                        State.js includes state-animations.css with predefined UI animations. Pair with <a href="https://github.com/iDev-Games/Cursor-JS">Cursor.js</a>, <a href="https://github.com/iDev-Games/Keys-JS">Keys.js</a>, and <a href="https://github.com/iDev-Games/Motion-JS">Motion.js</a> for a complete CSS/HTML development toolkit - perfect for games, dashboards, and interactive interfaces.
+                    </div>
+                </div>
+            </div>
+
+            <hr/>
+
+            <div class="container alignCenter background9">
+                <div class="box" id="animationsCSS">
+                    <h2 class="stateText">State-Animations.css</h2>
+                </div>
+                <hr id="headerLine2"/>
+                <div id="textBlock">
+                    <div class="box boxBG fadeIn" data-state>
+                        Predefined CSS animations for UI feedback, notifications, progress indicators, status effects, and interactive elements
+                    </div>
+                </div>
+                <div id="examples" class="box" data-state>
+                    <a class="moreExamples" href="animations.html" target="_Blank">View Documentation</a>
+                </div>
+            </div>
+
+            <hr/>
+
+            <div class="container alignCenter background3">
+                <div class="box boxBG title" id="install">
+                    <h2>How To Install?</h2>
+                </div>
+                <div class="box boxBG fadeIn" data-state>
+                    <p>All you need to do is add the state.js file into your projects JS folder and add the following code with your state.js location as the src. Put this code in to your head HTML tags.</p>
+                    <pre>
+                            &lt;script src="/js/state.js"&gt;&lt;/script&gt;
+                    </pre>
+                    <p>Or just add a CDN instead (coming soon)</p>
+                    <pre>
+                        &lt;script src="https://cdn.jsdelivr.net/npm/@idevgames/state-js/src/state.js"&gt;&lt;/script&gt;
+                    </pre>
+                </div>
+            </div>
+
+            <hr/>
+
+            <div class="container alignCenter background4">
+                <div class="box boxBG title" id="use">
+                    <h2>How To Use?</h2>
+                </div>
+                <div class="box boxBG fadeIn" data-state>
+                    <p>To activate state.js add the data attribute "data-state" or a class "enable-state" to your html element. State.js automatically tracks element visibility and adds the "state" and "state-visible" classes when elements appear on screen.</p>
+                    <pre>
+                            &lt;div class="fadeIn" data-state&gt; &lt;/div&gt;
+                    </pre>
+                    <pre>
+                        .fadeIn{ opacity:0; }
+                        .fadeIn.state{ animation: fadeIn 1s normal forwards ease-in-out; }
+                        @keyframes fadeIn { 0% { opacity:0; } 100% { opacity:1; } }
+                    </pre>
+                </div>
+            </div>
+
+            <hr/>
+
+            <div class="container alignCenter background5">
+                <div class="box boxBG title" id="tracking">
+                    <h2>Data Attribute Tracking</h2>
+                </div>
+                <div class="box boxBG fadeIn" data-state>
+                    <p>State.js can watch data attributes and automatically expose them as CSS variables. Perfect for progress indicators, counters, stats, and dynamic data visualization!</p>
+                    <pre>
+                            &lt;div id="player" data-state
+                                 data-state-watch="health,score"
+                                 data-health="100"
+                                 data-health-min="0"
+                                 data-health-max="100"
+                                 data-score="0"&gt;
+                            &lt;/div&gt;
+                    </pre>
+                    <pre>
+                            #player .health-bar {
+                                width: var(--state-health-percent);
+                                background: linear-gradient(90deg, red, yellow, green);
+                            }
+
+                            [data-health="0"] {
+                                animation: death 2s forwards;
+                            }
+                    </pre>
+                </div>
+            </div>
+
+            <hr/>
+
+            <div class="container alignCenter background6" data-state data-state-var="true">
+                <div class="box boxBG title">
+                    <h2>Interactive Demo</h2>
+                </div>
+                <div class="box boxBG fadeIn demo-interactive" data-state>
+                    <p>Move the slider to change the health value (no JavaScript needed!):</p>
+
+                    <div class="slider-demo">
+                        <input type="range"
+                               id="healthSlider"
+                               data-state
+                               data-state-bind="healthDemo"
+                               data-state-attr="health"
+                               min="0"
+                               max="100"
+                               value="75">
+                    </div>
+
+                    <div id="healthDemo"
+                         data-state
+                         data-state-watch="health"
+                         data-health="75"
+                         data-health-min="0"
+                         data-health-max="100">
+                        <div class="health-bar-demo">
+                            <div class="health-bar-fill" style="width: var(--state-health-percent);"></div>
+                        </div>
+                        <div class="value-display">Health: <span data-state-display="health">75</span>%</div>
+                    </div>
+
+                    <h3 style="margin-top: 30px; color: #fff;">The Code Behind This Demo:</h3>
+                    <div class="code-box">
+                        <pre>&lt;!-- Slider automatically updates healthDemo element --&gt;
+&lt;input type="range"
+       data-state
+       data-state-bind="healthDemo"
+       data-state-attr="health"
+       min="0" max="100" value="75"&gt;
+
+&lt;!-- Health bar watches the health attribute --&gt;
+&lt;div id="healthDemo"
+     data-state
+     data-state-watch="health"
+     data-health="75"
+     data-health-min="0"
+     data-health-max="100"&gt;
+
+    &lt;div class="health-bar"&gt;
+        &lt;div class="health-fill"
+             style="width: var(--state-health-percent);"&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div&gt;Health: &lt;span data-state-display="health"&gt;75&lt;/span&gt;%&lt;/div&gt;
+&lt;/div&gt;</pre>
+                    </div>
+                </div>
+            </div>
+
+            <hr/>
+
+            <div class="container alignCenter background7" data-state data-state-var="true">
+                <div class="box boxBG title">
+                    <h2>CSS Variables Available</h2>
+                </div>
+                <div class="box boxBG fadeIn" data-state>
+                    <p>State.js creates CSS variables automatically based on your configuration:</p>
+
+                    <div class="listItem">
+                        --state-visible (0 or 1)
+                    </div>
+                    <div class="listItem">
+                        --state-intersection (0-100%)
+                    </div>
+                    <div class="listItem">
+                        --state-viewport-x (0-100%)
+                    </div>
+                    <div class="listItem">
+                        --state-viewport-y (0-100%)
+                    </div>
+                    <div class="listItem">
+                        --state-[name] (raw value)
+                    </div>
+                    <div class="listItem">
+                        --state-[name]-percent (0-100%)
+                    </div>
+                    <div class="listItem">
+                        --state-[name]-normalized (0-1)
+                    </div>
+                    <div class="listItem">
+                        --state-[name]-deg (0-360deg)
+                    </div>
+                    <div class="listItem">
+                        --state-[name]-reverse (100%-0%)
+                    </div>
+
+                    <p style="margin-top:20px;">The data attribute will also update in increments for CSS attribute selectors like <span class="listItem">[data-state-health="50"]{ }</span></p>
+                </div>
+            </div>
+
+            <hr/>
+
+            <div class="container alignCenter background8" data-state data-state-var="true">
+                <div class="box boxBG title" id="attributes">
+                    <h2>Data Attributes</h2>
+                </div>
+                <div class="box boxBG fadeIn" data-state>
+                    <p>You can use the below data attributes for additional features</p>
+                    <div class="listItem">
+                        <pre>
+&lt;div id="yourelement"
+     data-state
+     data-state-var="true"
+     data-state-watch="health,mana,xp"
+     data-state-toggles="active,locked"
+     data-state-dimensions="true"
+     data-state-media="true"
+     data-state-global="true"
+     data-state-increment="10"&gt;
+&lt;/div&gt;
+                        </pre>
+                    </div>
+                </div>
+            </div>
+
+            <hr/>
+
+            <div class="container alignCenter" data-state data-state-var="true">
+                <div id="creative" class="box" data-state data-state-var="true">
+                    <div class="headerText">BUILD REACTIVE UI</div>
+                </div>
+                <div id="withcss" class="box" data-state data-state-var="true">
+                    <div class="headerText">WITH CSS/HTML</div>
+                </div>
+                <div id="examples" class="box" data-state>
+                    <a class="moreExamples" href="https://github.com/iDev-Games" target="_Blank" style="margin-top:10px;">More Libraries</a>
+                    <a class="moreExamples" href="https://codepen.io/collection/ojovYr" target="_Blank" style="margin-top:10px;">View Codepen Examples</a>
+                </div>
+            </div>
+
+            <hr/>
+
+            <div class="container">
+                <div class="box">
+                    <p>Check out the code of the documentation as an example.</p>
+                </div>
+                <div class="box">
+                    <a href="https://github.com/iDev-Games" target="_Blank" style="color:#FFF;">Download here</a>
+                </div>
+                <div class="box">
+                    <a href="https://dev.to/idevgames" target="_Blank" style="color:#FFF;">Keep up to date on dev.to</a>
+                </div>
+            </div>
+
+        </div>
+    </body>
+</html>
