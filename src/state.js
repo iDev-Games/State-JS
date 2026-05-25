@@ -1,4 +1,4 @@
-/* State.js v1.0.0 by iDev Games */
+/* State.js v1.0.1 by iDev Games */
 class State
 {
     states = [];
@@ -195,6 +195,8 @@ class State
         const attrName = triggerElement.getAttribute('data-state-attr');
         const attrValue = triggerElement.getAttribute('data-state-value');
         const toggleAttr = triggerElement.getAttribute('data-state-toggle');
+        const incrementValue = triggerElement.getAttribute('data-state-increment');
+        const decrementValue = triggerElement.getAttribute('data-state-decrement');
 
         targetIds.forEach(targetId => {
             const targetElement = document.getElementById(targetId);
@@ -205,6 +207,54 @@ class State
                 const currentValue = targetElement.getAttribute(`data-${toggleAttr}`);
                 const newValue = currentValue === 'true' ? 'false' : 'true';
                 targetElement.setAttribute(`data-${toggleAttr}`, newValue);
+            } else if (attrName && incrementValue !== null) {
+                // Increment mode: add incrementValue to current value (with optional min/max)
+                const currentValue = parseFloat(targetElement.getAttribute(`data-${attrName}`) || '0');
+                const increment = parseFloat(incrementValue);
+                let newValue = currentValue + increment;
+
+                // Apply min/max clamping if specified
+                const minValue = targetElement.getAttribute(`data-${attrName}-min`);
+                const maxValue = targetElement.getAttribute(`data-${attrName}-max`);
+                if (minValue !== null) {
+                    newValue = Math.max(parseFloat(minValue), newValue);
+                }
+                if (maxValue !== null) {
+                    newValue = Math.min(parseFloat(maxValue), newValue);
+                }
+
+                targetElement.setAttribute(`data-${attrName}`, String(newValue));
+
+                // Update display element if exists
+                const displayElement = targetElement.querySelector(`[data-state-display="${attrName}"]`) ||
+                                     document.getElementById(`${targetId}-${attrName}`);
+                if (displayElement) {
+                    displayElement.textContent = String(newValue);
+                }
+            } else if (attrName && decrementValue !== null) {
+                // Decrement mode: subtract decrementValue from current value (with optional min/max)
+                const currentValue = parseFloat(targetElement.getAttribute(`data-${attrName}`) || '0');
+                const decrement = parseFloat(decrementValue);
+                let newValue = currentValue - decrement;
+
+                // Apply min/max clamping if specified
+                const minValue = targetElement.getAttribute(`data-${attrName}-min`);
+                const maxValue = targetElement.getAttribute(`data-${attrName}-max`);
+                if (minValue !== null) {
+                    newValue = Math.max(parseFloat(minValue), newValue);
+                }
+                if (maxValue !== null) {
+                    newValue = Math.min(parseFloat(maxValue), newValue);
+                }
+
+                targetElement.setAttribute(`data-${attrName}`, String(newValue));
+
+                // Update display element if exists
+                const displayElement = targetElement.querySelector(`[data-state-display="${attrName}"]`) ||
+                                     document.getElementById(`${targetId}-${attrName}`);
+                if (displayElement) {
+                    displayElement.textContent = String(newValue);
+                }
             } else if (attrName && attrValue !== null) {
                 // Set mode: set specific attribute to specific value
                 targetElement.setAttribute(`data-${attrName}`, attrValue);

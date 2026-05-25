@@ -174,7 +174,25 @@ document.getElementById('player').setAttribute('data-health', '75');
         data-state-value="100">
     Full Health
 </button>
+
+<!-- Button that increments score by 10 (perfect for clickers!) -->
+<button data-state
+        data-state-trigger
+        data-state-bind="player"
+        data-state-attr="score"
+        data-state-increment="10">
+    Add 10 Points
+</button>
 ```
+
+**Trigger Modes:**
+
+- **Toggle:** `data-state-toggle="attribute"` - Flips between true/false
+- **Set:** `data-state-attr="attribute"` + `data-state-value="value"` - Sets specific value
+- **Increment:** `data-state-attr="attribute"` + `data-state-increment="amount"` - Adds to current value
+- **Decrement:** `data-state-attr="attribute"` + `data-state-decrement="amount"` - Subtracts from current value
+
+**Both increment and decrement automatically respect `data-[attr]-min` and `data-[attr]-max` bounds!**
 
 **Works with any element:**
 
@@ -243,6 +261,8 @@ When using `data-state-watch="health,score,level"`:
 | `data-state-bind="id1,id2"` | Auto-bind input to element IDs | `data-state-bind="player,enemy"` |
 | `data-state-attr="attrName"` | Which attribute to update when binding | `data-state-attr="health"` |
 | `data-state-value="value"` | Value to set when trigger is clicked | `data-state-value="100"` |
+| `data-state-increment="amount"` | Amount to add when trigger is clicked (respects min/max) | `data-state-increment="10"` |
+| `data-state-decrement="amount"` | Amount to subtract when trigger is clicked (respects min/max) | `data-state-decrement="5"` |
 | `data-state-trigger` | Make element clickable to trigger state changes | `data-state-trigger` |
 | `data-state-toggle="attrName"` | Toggle boolean attribute on/off when clicked | `data-state-toggle="powered"` |
 | `data-state-display="attrName"` | Auto-display attribute value as text | `data-state-display="health"` |
@@ -380,6 +400,85 @@ State.js includes **state-animations.css** - a companion stylesheet with predefi
 .state-complete {
     animation: complete-check 0.5s forwards;
 }
+```
+
+### Clicker Game (Zero JavaScript!)
+
+```html
+<div id="clicker"
+     data-state
+     data-state-watch="score"
+     data-state-var="true"
+     data-score="0"
+     data-score-max="100">
+
+    <h1>Score: <span data-state-display="score">0</span></h1>
+
+    <button data-state
+            data-state-trigger
+            data-state-bind="clicker"
+            data-state-attr="score"
+            data-state-increment="1">
+        Click Me!
+    </button>
+</div>
+
+<style>
+/* Celebrate milestones with CSS alone */
+#clicker[data-score="10"],
+#clicker[data-score="20"],
+#clicker[data-score="30"] {
+    animation: milestone-burst 0.5s ease-out;
+}
+
+#clicker[data-score="100"] {
+    animation: victory-flash 1s ease-out;
+}
+
+/* Progress bar using CSS variables */
+#clicker::after {
+    content: "";
+    width: var(--state-score-percent);
+    height: 10px;
+    background: linear-gradient(90deg, red, yellow, green);
+}
+</style>
+```
+
+### Volume Control (Increment & Decrement with Auto-Clamping)
+
+```html
+<div id="audio"
+     data-state
+     data-state-watch="volume"
+     data-state-var="true"
+     data-volume="50"
+     data-volume-min="0"
+     data-volume-max="100">
+
+    <h2>Volume: <span data-state-display="volume">50</span>%</h2>
+
+    <!-- Decrement button (auto-stops at 0) -->
+    <button data-state
+            data-state-trigger
+            data-state-bind="audio"
+            data-state-attr="volume"
+            data-state-decrement="10">
+        -
+    </button>
+
+    <!-- Increment button (auto-stops at 100) -->
+    <button data-state
+            data-state-trigger
+            data-state-bind="audio"
+            data-state-attr="volume"
+            data-state-increment="10">
+        +
+    </button>
+
+    <!-- Visual bar updates automatically -->
+    <div class="volume-bar" style="width: var(--state-volume-percent);"></div>
+</div>
 ```
 
 ---

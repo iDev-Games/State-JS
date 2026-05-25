@@ -829,6 +829,142 @@
                     </div>
                 </details>
 
+                <!-- Clicker/Counter System -->
+                <h3>Clicker/Counter System (Zero JavaScript)</h3>
+                <div class="demo-preview">
+                    <div id="clickerDemoAnim"
+                         data-state
+                         data-state-watch="score"
+                         data-state-var="true"
+                         data-score="0"
+                         data-score-min="0"
+                         data-score-max="100"
+                         style="width: 400px; text-align: center;">
+
+                        <div style="background: #222; padding: 30px; border-radius: 10px;">
+                            <div style="font-size: 48px; font-family: 'Bebas Neue'; margin-bottom: 20px;">
+                                <span data-state-display="score">0</span>
+                            </div>
+
+                            <div style="background: #444; height: 15px; border-radius: 10px; overflow: hidden; margin-bottom: 20px;">
+                                <div style="background: linear-gradient(90deg, #700c0c 0%, #ff6b6b 100%);
+                                           height: 100%;
+                                           width: var(--state-score-percent);
+                                           transition: width 0.3s;">
+                                </div>
+                            </div>
+
+                            <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                                <button class="button"
+                                        data-state
+                                        data-state-trigger
+                                        data-state-bind="clickerDemoAnim"
+                                        data-state-attr="score"
+                                        data-state-increment="1">
+                                    +1
+                                </button>
+                                <button class="button"
+                                        data-state
+                                        data-state-trigger
+                                        data-state-bind="clickerDemoAnim"
+                                        data-state-attr="score"
+                                        data-state-increment="5">
+                                    +5
+                                </button>
+                                <button class="button"
+                                        data-state
+                                        data-state-trigger
+                                        data-state-bind="clickerDemoAnim"
+                                        data-state-attr="score"
+                                        data-state-increment="10">
+                                    +10
+                                </button>
+                                <button class="button"
+                                        data-state
+                                        data-state-trigger
+                                        data-state-bind="clickerDemoAnim"
+                                        data-state-attr="score"
+                                        data-state-value="0"
+                                        style="background: #444;">
+                                    Reset
+                                </button>
+                            </div>
+
+                            <div style="margin-top: 20px; font-size: 14px; opacity: 0.7;">
+                                Milestones at 25, 50, 75, and 100!
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <details style="margin: 20px 0;">
+                    <summary style="cursor: pointer; padding: 10px; background: #1a1a1a; border-radius: 5px; font-weight: bold;">Show Code</summary>
+                    <div class="code-example">
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        <pre>&lt;div id="clicker"
+     data-state
+     data-state-watch="score"
+     data-state-var="true"
+     data-score="0"
+     data-score-max="100"&gt;
+
+    &lt;!-- Display --&gt;
+    &lt;div class="score-display"&gt;&lt;span data-state-display="score"&gt;0&lt;/span&gt;&lt;/div&gt;
+
+    &lt;!-- Progress Bar --&gt;
+    &lt;div class="progress-bar" style="width: var(--state-score-percent);"&gt;&lt;/div&gt;
+
+    &lt;!-- Increment Buttons --&gt;
+    &lt;button data-state data-state-trigger data-state-bind="clicker"
+            data-state-attr="score" data-state-increment="1"&gt;+1&lt;/button&gt;
+
+    &lt;button data-state data-state-trigger data-state-bind="clicker"
+            data-state-attr="score" data-state-increment="5"&gt;+5&lt;/button&gt;
+
+    &lt;button data-state data-state-trigger data-state-bind="clicker"
+            data-state-attr="score" data-state-increment="10"&gt;+10&lt;/button&gt;
+
+    &lt;!-- Reset Button --&gt;
+    &lt;button data-state data-state-trigger data-state-bind="clicker"
+            data-state-attr="score" data-state-value="0"&gt;Reset&lt;/button&gt;
+&lt;/div&gt;
+
+&lt;style&gt;
+    /* Milestone celebrations using CSS alone */
+    #clicker[data-score="20"],
+    #clicker[data-score="30"],
+    #clicker[data-score="40"] {
+        animation: milestone-pulse 0.5s ease-out;
+    }
+
+    #clicker[data-score="50"] {
+        animation: milestone-burst 0.8s ease-out;
+    }
+
+    #clicker[data-score="100"] {
+        animation: victory-flash 1s ease-out;
+    }
+
+    @keyframes milestone-pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+
+    @keyframes milestone-burst {
+        0% { transform: scale(1); filter: brightness(1); }
+        50% { transform: scale(1.1); filter: brightness(1.5); }
+        100% { transform: scale(1); filter: brightness(1); }
+    }
+
+    @keyframes victory-flash {
+        0%, 100% { filter: brightness(1); }
+        20%, 60% { filter: brightness(2) hue-rotate(90deg); }
+        40%, 80% { filter: brightness(0.5); }
+    }
+&lt;/style&gt;</pre>
+                    </div>
+                </details>
+
 
                 <!-- Inventory Toggle System -->
                 <h3>Inventory Toggle System</h3>
