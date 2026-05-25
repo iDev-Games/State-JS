@@ -1,4 +1,4 @@
-/* State.js v1.0.2 by iDev Games */
+/* State.js v1.0.3 by iDev Games */
 class State
 {
     states = [];
@@ -17,9 +17,48 @@ class State
         this.observer = new IntersectionObserver(this.stateObserver);
     }
 
+    evaluateCalc(calcExpression, sourceElement) {
+        const tempEl = document.createElement('div');
+        tempEl.style.position = 'absolute';
+        tempEl.style.visibility = 'hidden';
+        const computedStyle = window.getComputedStyle(sourceElement);
+        for (let i = 0; i < computedStyle.length; i++) {
+            const prop = computedStyle[i];
+            if (prop.startsWith('--state-')) {
+                tempEl.style.setProperty(prop, computedStyle.getPropertyValue(prop));
+            }
+        }
+
+        tempEl.style.width = `calc((${calcExpression}) * 1px)`;
+        document.body.appendChild(tempEl);
+        const result = parseFloat(window.getComputedStyle(tempEl).width) || 0;
+        document.body.removeChild(tempEl);
+
+        return result;
+    }
+
+    evaluateCondition(conditionStr, sourceElement) {
+        try {
+            const processed = conditionStr.replace(/([a-zA-Z][\w-]*)/g, (match) => {
+                const keywords = ['true', 'false', 'null', 'undefined', 'and', 'or', 'not'];
+                if (keywords.includes(match.toLowerCase())) {
+                    return match;
+                }
+                const value = sourceElement.getAttribute(`data-${match}`);
+                return value !== null ? value : match;
+            });
+            const normalized = processed
+                .replace(/\band\b/gi, '&&')
+                .replace(/\bor\b/gi, '||');
+            return Function('"use strict"; return (' + normalized + ')')();
+        } catch (e) {
+            console.warn('State.js: Invalid condition expression:', conditionStr, e);
+            return false;
+        }
+    }
+
     stateInit() {
         this.observer = new IntersectionObserver(this.stateObserver);
-        // Select elements with data-state, .enable-state, body, OR any element with state-related attributes
         this.states = document.querySelectorAll('body,.enable-state,[data-state],[data-state-toggles],[data-state-watch],[data-state-trigger]');
         this.states.forEach((element, index) => {
             element.index = index;
@@ -28,69 +67,45 @@ class State
     }
 
     setupElement(element) {
-        // Add state classes immediately
         if (document.body !== element) {
             if (!element.classList.contains('state')) {
                 element.classList.add('state', 'state-visible');
             }
         }
-
-        // Setup intersection observer for visibility tracking (optional feature)
         this.observer.observe(element);
-
-        // Setup mutation observer for data-* attribute changes
         this.setupMutationObserver(element);
-
-        // Setup form input listeners
         if (element.tagName === 'INPUT' || element.tagName === 'SELECT' ||
             element.tagName === 'TEXTAREA' || element.tagName === 'METER' ||
             element.tagName === 'PROGRESS') {
             this.setupFormElement(element);
         }
-
-        // Setup media element listeners
         if (element.tagName === 'VIDEO' || element.tagName === 'AUDIO') {
             this.setupMediaElement(element);
         }
-
-        // Setup trigger elements (buttons, divs, etc. that can trigger state changes)
         if (element.hasAttribute('data-state-trigger')) {
             this.setupTriggerElement(element);
         }
-
-        // Initial update
         this.updateElement(element);
     }
 
     setupMutationObserver(element) {
         const config = this.getStateConfig(element);
-
-        // Build list of attributes to watch
         let attrsToWatch = [];
-
-        // If user explicitly set watchAttrs
         if (Array.isArray(config.watchAttrs)) {
             if (config.watchAttrs.includes('none')) {
-                // Watch nothing
                 attrsToWatch = [];
             } else {
-                // Watch only what user listed
                 attrsToWatch = [...config.watchAttrs];
             }
         } else {
-            // DEFAULT: watch ALL data-* attributes
             attrsToWatch = Array.from(element.attributes)
                 .map(a => a.name)
                 .filter(name => name.startsWith('data-'))
                 .map(name => name.replace('data-', ''));
         }
-
-        // Always include toggles
         attrsToWatch.push(...config.toggleAttrs);
-
-
         if (attrsToWatch.length === 0) {
-            return; // Nothing to watch
+            return; 
         }
 
         const observer = new MutationObserver((mutations) => {
@@ -130,10 +145,8 @@ class State
             element.addEventListener(eventType, this.handleFormInput, { passive: true });
         });
 
-        // Setup automatic binding to other elements
         const bindAttr = element.getAttribute('data-state-bind');
         if (bindAttr) {
-            // Use both 'input' and 'change' for better checkbox/radio support
             element.addEventListener('input', (e) => {
                 this.handleInputBinding(element, bindAttr);
             }, { passive: true });
@@ -147,8 +160,6 @@ class State
         const targetIds = bindAttr.split(',').map(id => id.trim());
         let inputValue = inputElement.value;
         const attrName = inputElement.getAttribute('data-state-attr') || 'value';
-
-        // Handle checkbox values
         if (inputElement.type === 'checkbox') {
             inputValue = inputElement.checked ? 'true' : 'false';
         }
@@ -156,10 +167,7 @@ class State
         targetIds.forEach(targetId => {
             const targetElement = document.getElementById(targetId);
             if (targetElement) {
-                // Update the target element's data attribute
                 targetElement.setAttribute(`data-${attrName}`, inputValue);
-
-                // If there's a text display element, update it too
                 const displayElement = targetElement.querySelector(`[data-state-display="${attrName}"]`) ||
                                      document.getElementById(`${targetId}-${attrName}`);
                 if (displayElement) {
@@ -171,7 +179,6 @@ class State
 
     setupMediaElement(element) {
         this.mediaElements.add(element);
-
         const events = ['timeupdate', 'play', 'pause', 'volumechange', 'loadedmetadata'];
         events.forEach(eventType => {
             element.addEventListener(eventType, this.handleMediaUpdate, { passive: true });
@@ -180,64 +187,85 @@ class State
 
     setupTriggerElement(element) {
         const bindAttr = element.getAttribute('data-state-bind');
-        if (!bindAttr) return;
+        const chainAttr = element.getAttribute('data-state-trigger-chain');
+        const condition = element.getAttribute('data-state-condition');
+        if (!bindAttr && !chainAttr) return;
 
         element.addEventListener('click', (e) => {
             this.handleTriggerClick(element, bindAttr);
         });
-
-        // Add cursor pointer for better UX
         element.style.cursor = 'pointer';
+        if (condition && bindAttr) {
+            this.updateTriggerCondition(element, bindAttr, condition);
+        }
+    }
+
+    updateTriggerCondition(triggerElement, bindAttr, condition) {
+        const targetIds = bindAttr.split(',').map(id => id.trim());
+        const targetElement = document.getElementById(targetIds[0]);
+
+        if (targetElement) {
+            if (this.evaluateCondition(condition, targetElement)) {
+                triggerElement.classList.remove('state-disabled');
+            } else {
+                triggerElement.classList.add('state-disabled');
+            }
+        }
+    }
+
+    updateConditionalTriggers(targetId) {
+        const triggers = document.querySelectorAll(`[data-state-trigger][data-state-condition][data-state-bind*="${targetId}"]`);
+
+        triggers.forEach(trigger => {
+            const bindAttr = trigger.getAttribute('data-state-bind');
+            const condition = trigger.getAttribute('data-state-condition');
+            if (bindAttr && condition) {
+                this.updateTriggerCondition(trigger, bindAttr, condition);
+            }
+        });
     }
 
     handleTriggerClick(triggerElement, bindAttr) {
-        const targetIds = bindAttr.split(',').map(id => id.trim());
         const attrName = triggerElement.getAttribute('data-state-attr');
         const attrValue = triggerElement.getAttribute('data-state-value');
         const toggleAttr = triggerElement.getAttribute('data-state-toggle');
         const incrementValue = triggerElement.getAttribute('data-state-increment');
         const decrementValue = triggerElement.getAttribute('data-state-decrement');
+        const chainTriggers = triggerElement.getAttribute('data-state-trigger-chain');
+        const condition = triggerElement.getAttribute('data-state-condition');
+        if (condition && bindAttr) {
+            const targetIds = bindAttr.split(',').map(id => id.trim());
+            const targetElement = document.getElementById(targetIds[0]);
 
-        targetIds.forEach(targetId => {
-            const targetElement = document.getElementById(targetId);
-            if (!targetElement) return;
+            if (targetElement && !this.evaluateCondition(condition, targetElement)) {
+                triggerElement.classList.add('state-disabled');
+                return;
+            } else {
+                triggerElement.classList.remove('state-disabled');
+            }
+        }
 
-            if (toggleAttr) {
-                // Toggle mode: flip between true/false
+        if (bindAttr) {
+            const targetIds = bindAttr.split(',').map(id => id.trim());
+
+            targetIds.forEach(targetId => {
+                const targetElement = document.getElementById(targetId);
+                if (!targetElement) return;
+
+                if (toggleAttr) {
                 const currentValue = targetElement.getAttribute(`data-${toggleAttr}`);
                 const newValue = currentValue === 'true' ? 'false' : 'true';
                 targetElement.setAttribute(`data-${toggleAttr}`, newValue);
             } else if (attrName && incrementValue !== null) {
-                // Increment mode: add incrementValue to current value (with optional min/max)
                 const currentValue = parseFloat(targetElement.getAttribute(`data-${attrName}`) || '0');
-
-                // Evaluate increment value (supports calc() with CSS variables)
                 let increment;
                 if (incrementValue.includes('calc(')) {
-                    // Create temporary element to evaluate calc() expression
-                    const tempEl = document.createElement('div');
-                    tempEl.style.setProperty('--state-current', currentValue);
-
-                    // Copy all CSS variables from target element to temp element
-                    const computedStyle = window.getComputedStyle(targetElement);
-                    for (let i = 0; i < computedStyle.length; i++) {
-                        const prop = computedStyle[i];
-                        if (prop.startsWith('--state-')) {
-                            tempEl.style.setProperty(prop, computedStyle.getPropertyValue(prop));
-                        }
-                    }
-
-                    tempEl.style.width = incrementValue;
-                    document.body.appendChild(tempEl);
-                    increment = parseFloat(window.getComputedStyle(tempEl).width) || 0;
-                    document.body.removeChild(tempEl);
+                    increment = this.evaluateCalc(incrementValue, targetElement);
                 } else {
                     increment = parseFloat(incrementValue);
                 }
 
                 let newValue = currentValue + increment;
-
-                // Apply min/max clamping if specified
                 const minValue = targetElement.getAttribute(`data-${attrName}-min`);
                 const maxValue = targetElement.getAttribute(`data-${attrName}-max`);
                 if (minValue !== null) {
@@ -248,44 +276,22 @@ class State
                 }
 
                 targetElement.setAttribute(`data-${attrName}`, String(newValue));
-
-                // Update display element if exists
                 const displayElement = targetElement.querySelector(`[data-state-display="${attrName}"]`) ||
                                      document.getElementById(`${targetId}-${attrName}`);
                 if (displayElement) {
                     displayElement.textContent = String(newValue);
                 }
+                this.updateConditionalTriggers(targetId);
             } else if (attrName && decrementValue !== null) {
-                // Decrement mode: subtract decrementValue from current value (with optional min/max)
                 const currentValue = parseFloat(targetElement.getAttribute(`data-${attrName}`) || '0');
-
-                // Evaluate decrement value (supports calc() with CSS variables)
                 let decrement;
                 if (decrementValue.includes('calc(')) {
-                    // Create temporary element to evaluate calc() expression
-                    const tempEl = document.createElement('div');
-                    tempEl.style.setProperty('--state-current', currentValue);
-
-                    // Copy all CSS variables from target element to temp element
-                    const computedStyle = window.getComputedStyle(targetElement);
-                    for (let i = 0; i < computedStyle.length; i++) {
-                        const prop = computedStyle[i];
-                        if (prop.startsWith('--state-')) {
-                            tempEl.style.setProperty(prop, computedStyle.getPropertyValue(prop));
-                        }
-                    }
-
-                    tempEl.style.width = decrementValue;
-                    document.body.appendChild(tempEl);
-                    decrement = parseFloat(window.getComputedStyle(tempEl).width) || 0;
-                    document.body.removeChild(tempEl);
+                    decrement = this.evaluateCalc(decrementValue, targetElement);
                 } else {
                     decrement = parseFloat(decrementValue);
                 }
 
                 let newValue = currentValue - decrement;
-
-                // Apply min/max clamping if specified
                 const minValue = targetElement.getAttribute(`data-${attrName}-min`);
                 const maxValue = targetElement.getAttribute(`data-${attrName}-max`);
                 if (minValue !== null) {
@@ -296,25 +302,40 @@ class State
                 }
 
                 targetElement.setAttribute(`data-${attrName}`, String(newValue));
-
-                // Update display element if exists
                 const displayElement = targetElement.querySelector(`[data-state-display="${attrName}"]`) ||
                                      document.getElementById(`${targetId}-${attrName}`);
                 if (displayElement) {
                     displayElement.textContent = String(newValue);
                 }
+                this.updateConditionalTriggers(targetId);
             } else if (attrName && attrValue !== null) {
-                // Set mode: set specific attribute to specific value
-                targetElement.setAttribute(`data-${attrName}`, attrValue);
+                let finalValue;
+                if (attrValue.includes('calc(')) {
+                    finalValue = String(this.evaluateCalc(attrValue, targetElement));
+                } else {
+                    finalValue = attrValue;
+                }
 
-                // Update display element if exists
+                targetElement.setAttribute(`data-${attrName}`, finalValue);
                 const displayElement = targetElement.querySelector(`[data-state-display="${attrName}"]`) ||
                                      document.getElementById(`${targetId}-${attrName}`);
                 if (displayElement) {
-                    displayElement.textContent = attrValue;
+                    displayElement.textContent = finalValue;
                 }
+                this.updateConditionalTriggers(targetId);
             }
-        });
+            });
+        }
+
+        if (chainTriggers) {
+            const chainIds = chainTriggers.split(',').map(id => id.trim());
+            chainIds.forEach(chainId => {
+                const chainElement = document.getElementById(chainId);
+                if (chainElement && chainElement.hasAttribute('data-state-trigger')) {
+                    chainElement.click();
+                }
+            });
+        }
     }
 
     handleFormInput(event) {
@@ -362,11 +383,6 @@ class State
                 this.updateElement(entry.target);
             });
         });
-
-        // Don't unobserve - keep watching for visibility changes
-        // entries.forEach((entry) => {
-        //     this.observer.unobserve(entry.target);
-        // });
     }
 
     stateIntersecting(entry) {
@@ -385,36 +401,26 @@ class State
         const config = this.getStateConfig(element);
         const styleTarget = config.isGlobal ? document.documentElement.style : element.style;
         const idSuffix = config.isGlobal && element.id ? `-${element.id}` : '';
-
-        // Update visibility and viewport position
         this.updateVisibilityVars(element, styleTarget, idSuffix);
-
-        // Update dimensions if enabled
         if (config.enableDimensions) {
             this.updateDimensionVars(element, styleTarget, idSuffix);
         }
-
-        // Update watched data attributes
         if (config.watchAttrs === null || config.watchAttrs.length > 0) {
             this.updateWatchedVars(element, config, styleTarget, idSuffix);
         }
 
-        // Update toggle attributes
         if (config.toggleAttrs.length > 0) {
             this.updateToggleVars(element, config, styleTarget, idSuffix);
         }
 
-        // Update form input values
         if (this.formElements.has(element)) {
             this.updateFormVars(element, styleTarget, idSuffix);
         }
 
-        // Update media element state
         if (this.mediaElements.has(element) && config.enableMedia) {
             this.updateMediaVars(element, styleTarget, idSuffix);
         }
 
-        // Update body state if this is body element
         if (element === document.body) {
             this.updateBodyState(element);
         }
@@ -424,17 +430,11 @@ class State
         const rect = element.getBoundingClientRect();
         const viewportHeight = window.innerHeight;
         const viewportWidth = window.innerWidth;
-
-        // Visibility (0 or 1)
         const isVisible = rect.top < viewportHeight && rect.bottom > 0 ? 1 : 0;
         styleTarget.setProperty(`--state-visible${idSuffix}`, isVisible);
-
-        // Intersection ratio (0-100%)
         const visibleHeight = Math.min(rect.bottom, viewportHeight) - Math.max(rect.top, 0);
         const intersectionRatio = Math.max(0, Math.min(100, (visibleHeight / rect.height) * 100));
         styleTarget.setProperty(`--state-intersection${idSuffix}`, `${Math.round(intersectionRatio)}%`);
-
-        // Viewport position (0-100%)
         const viewportX = ((rect.left + rect.width / 2) / viewportWidth) * 100;
         const viewportY = ((rect.top + rect.height / 2) / viewportHeight) * 100;
         styleTarget.setProperty(`--state-viewport-x${idSuffix}`, `${Math.round(viewportX)}%`);
@@ -451,10 +451,8 @@ class State
     }
 
     updateWatchedVars(element, config, styleTarget, idSuffix) {
-        // Determine which attributes to process
         let attrs = config.watchAttrs;
 
-        // DEFAULT: watch all data-* attributes
         if (attrs === null) {
             attrs = Array.from(element.attributes)
                 .map(a => a.name)
@@ -462,7 +460,6 @@ class State
                 .map(name => name.replace('data-', ''));
         }
 
-        // Skip if nothing to watch
         if (!Array.isArray(attrs) || attrs.length === 0) return;
 
         attrs.forEach(attr => {
@@ -470,31 +467,21 @@ class State
 
             if (value !== null) {
                 const numValue = parseFloat(value);
-
-                // Set raw value
                 styleTarget.setProperty(`--state-${attr}${idSuffix}`, isNaN(numValue) ? value : numValue);
-
-                // If numeric, calculate percentage
                 if (!isNaN(numValue)) {
                     const min = parseFloat(element.getAttribute(`data-${attr}-min`) || '0');
                     const max = parseFloat(element.getAttribute(`data-${attr}-max`) || '100');
-
                     const percent = ((numValue - min) / (max - min)) * 100;
                     const clampedPercent = Math.max(0, Math.min(100, percent));
-
                     styleTarget.setProperty(`--state-${attr}-percent${idSuffix}`, `${Math.round(clampedPercent)}%`);
                     styleTarget.setProperty(`--state-${attr}-normalized${idSuffix}`, (clampedPercent / 100).toFixed(2));
                     styleTarget.setProperty(`--state-${attr}-deg${idSuffix}`, `${Math.round((clampedPercent / 100) * 360)}deg`);
                     styleTarget.setProperty(`--state-${attr}-reverse${idSuffix}`, `${Math.round(100 - clampedPercent)}%`);
-
-                    // Update data attribute in increments for CSS selectors
                     const incrementedValue = Math.round(numValue / config.increment) * config.increment;
                     if (element.getAttribute(`data-state-${attr}`) !== String(incrementedValue)) {
                         element.setAttribute(`data-state-${attr}`, String(incrementedValue));
                     }
                 }
-
-                // Update data-state-display elements
                 const displayElements = element.querySelectorAll(`[data-state-display="${attr}"]`);
                 displayElements.forEach(displayEl => {
                     displayEl.textContent = value;
@@ -507,17 +494,12 @@ class State
         config.toggleAttrs.forEach(attr => {
             const value = element.getAttribute(`data-${attr.toLowerCase()}`);
             const boolValue = value === 'true' || value === '1' ? 1 : 0;
-
             styleTarget.setProperty(`--state-${attr}${idSuffix}`, boolValue);
-
-            // Add/remove class for easy CSS targeting
             if (boolValue === 1) {
                 element.classList.add(`state-${attr}`);
             } else {
                 element.classList.remove(`state-${attr}`);
             }
-
-            // Update data-state-display elements
             const displayElements = element.querySelectorAll(`[data-state-display="${attr}"]`);
             displayElements.forEach(displayEl => {
                 displayEl.textContent = value;
@@ -576,7 +558,6 @@ class State
             styleTarget.setProperty(`--state-value-normalized${idSuffix}`, (clampedPercent / 100).toFixed(2));
             styleTarget.setProperty(`--state-value-deg${idSuffix}`, `${Math.round((clampedPercent / 100) * 360)}deg`);
 
-            // Update data attribute for CSS selectors
             element.setAttribute('data-state-value', String(Math.round(value)));
         }
     }
@@ -594,7 +575,6 @@ class State
         styleTarget.setProperty(`--state-volume${idSuffix}`, Math.round(volume));
         styleTarget.setProperty(`--state-playing${idSuffix}`, isPlaying);
 
-        // Add/remove playing class
         if (isPlaying) {
             element.classList.add('state-playing');
         } else {
@@ -603,7 +583,6 @@ class State
     }
 
     updateBodyState(element) {
-        // Body gets special classes for global state
         element.classList.add('state-ready');
     }
 }
@@ -612,7 +591,6 @@ window.state = new State();
 
 window.addEventListener('load', state.stateInit, { passive: true });
 window.addEventListener('resize', () => {
-    // Re-calculate positions on resize
     state.states.forEach((element) => {
         state.updateElement(element);
     });

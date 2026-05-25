@@ -213,6 +213,77 @@ Both increment and decrement support `calc()` expressions with CSS variables:
 
 **Both increment and decrement automatically respect `data-[attr]-min` and `data-[attr]-max` bounds!**
 
+**Conditional Triggers:**
+
+Use `data-state-condition` to only execute operations when a condition is met (perfect for costs, requirements, unlock systems):
+
+```html
+<!-- Only works if score >= 20 -->
+<button data-state
+        data-state-trigger
+        data-state-bind="player"
+        data-state-attr="level"
+        data-state-increment="1"
+        data-state-condition="score >= 20">
+    Level Up (costs 20)
+</button>
+
+<!-- Complex conditions with AND/OR -->
+<button data-state-condition="gold >= 100 and level < 10">
+    Affordable Upgrade
+</button>
+
+<!-- Multiple attributes -->
+<button data-state-condition="health > 0 and mana >= 50">
+    Cast Spell
+</button>
+```
+
+When a condition fails, the button gets the `state-disabled` class automatically! Style it with CSS:
+
+```css
+.state-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+```
+
+**Chaining Multiple Operations:**
+
+Use `data-state-trigger-chain` to perform multiple operations sequentially (perfect for complex game mechanics):
+
+```html
+<!-- Level up button that both spends gold AND increases level -->
+<button data-state
+        data-state-trigger
+        data-state-bind="player"
+        data-state-condition="gold >= 100"
+        data-state-trigger-chain="spendGold,gainLevel">
+    Level Up (costs 100 gold)
+</button>
+
+<!-- Hidden trigger: deduct gold -->
+<button id="spendGold"
+        data-state
+        data-state-trigger
+        data-state-bind="player"
+        data-state-attr="gold"
+        data-state-decrement="100"
+        style="display:none">
+</button>
+
+<!-- Hidden trigger: add level -->
+<button id="gainLevel"
+        data-state
+        data-state-trigger
+        data-state-bind="player"
+        data-state-attr="level"
+        data-state-increment="1"
+        style="display:none">
+</button>
+```
+
 **Works with any element:**
 
 ```html
@@ -279,10 +350,12 @@ When using `data-state-watch="health,score,level"`:
 | `data-state-watch="attr1,attr2"` | Watch specific data attributes | `data-state-watch="health,mana,xp"` |
 | `data-state-bind="id1,id2"` | Auto-bind input to element IDs | `data-state-bind="player,enemy"` |
 | `data-state-attr="attrName"` | Which attribute to update when binding | `data-state-attr="health"` |
-| `data-state-value="value"` | Value to set when trigger is clicked | `data-state-value="100"` |
+| `data-state-value="value"` | Value to set when trigger is clicked (supports calc()) | `data-state-value="100"` or `calc(var(--state-level) * 10)` |
 | `data-state-increment="amount"` | Amount to add when trigger is clicked (supports calc(), respects min/max) | `data-state-increment="10"` or `calc(var(--state-level) * 5)` |
 | `data-state-decrement="amount"` | Amount to subtract when trigger is clicked (supports calc(), respects min/max) | `data-state-decrement="5"` or `calc(var(--state-cost))` |
 | `data-state-trigger` | Make element clickable to trigger state changes | `data-state-trigger` |
+| `data-state-trigger-chain="id1,id2"` | Click other triggers sequentially after this one | `data-state-trigger-chain="payCost,addLevel"` |
+| `data-state-condition="expression"` | Only execute if condition is true (adds `state-disabled` class when false) | `data-state-condition="score >= 20"` or `"gold >= 100 and level < 10"` |
 | `data-state-toggle="attrName"` | Toggle boolean attribute on/off when clicked | `data-state-toggle="powered"` |
 | `data-state-display="attrName"` | Auto-display attribute value as text | `data-state-display="health"` |
 | `data-state-toggles="attr1,attr2"` | Boolean state toggles | `data-state-toggles="active,locked"` |
@@ -714,22 +787,3 @@ Feel free to check the [issues page](https://github.com/iDev-Games/State-JS/issu
 
 Give a ⭐️ if this project helped you!
 
----
-
-## Changelog
-
-### v1.0.1
-- Added `data-state-increment` - Increment values without JavaScript
-- Added `data-state-decrement` - Decrement values without JavaScript
-- Added `calc()` support - Dynamic calculations using CSS variables in increment/decrement
-- Auto-clamping - Min/max bounds automatically respected
-- Enables idle/clicker games, scaling mechanics, and dynamic UI with zero JavaScript
-
-### v1.0.0
-- Initial release
-- Data attribute tracking
-- Form input tracking
-- Media element tracking
-- Element visibility tracking
-- State-animations.css included
-- CSS-first reactive UI framework

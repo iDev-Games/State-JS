@@ -1,4 +1,4 @@
-/* State-Animations.css v1.0.0 by iDev Games */
+/* State-Animations.css v1.0.4 by iDev Games */
 /* CSS Animations for State.js - Game Development Focused */
 
 /* ====================================
@@ -10,6 +10,19 @@
     --state-duration: 1s;
     --state-easing: ease-out;
     --state-direction: normal forwards;
+}
+
+/* ====================================
+   CONDITIONAL TRIGGER STATES
+   ==================================== */
+
+/* Disabled state (applied when data-state-condition fails) */
+.state-disabled {
+    opacity: 0.5;
+    cursor: not-allowed !important;
+    pointer-events: none;
+    filter: grayscale(0.6);
+    transition: opacity 0.2s ease, filter 0.2s ease;
 }
 
 /* ====================================
