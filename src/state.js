@@ -1,4 +1,4 @@
-/* State.js v1.0.4 by iDev Games */
+/* State.js v1.0.5 by iDev Games */
 class State
 {
     states = [];
@@ -264,12 +264,23 @@ class State
                 const newValue = currentValue === 'true' ? 'false' : 'true';
                 targetElement.setAttribute(`data-${toggleAttr}`, newValue);
             } else if (attrName && incrementValue !== null) {
-                const currentValue = parseFloat(targetElement.getAttribute(`data-${attrName}`) || '0');
+                // NUMERIC COERCION PATCH: Ensure current value is treated as number
+                let currentAttr = targetElement.getAttribute(`data-${attrName}`) || '0';
+                const currentValue = parseFloat(currentAttr);
+                if (isNaN(currentValue)) {
+                    console.warn(`State.js: Attribute data-${attrName} is not numeric:`, currentAttr);
+                    return; // Skip if not a valid number
+                }
                 let increment;
                 if (incrementValue.includes('calc(')) {
                     increment = this.evaluateCalc(incrementValue, targetElement);
                 } else {
                     increment = parseFloat(incrementValue);
+                }
+                // NUMERIC COERCION PATCH: Validate increment is a valid number
+                if (isNaN(increment)) {
+                    console.warn(`State.js: Increment value is not numeric:`, incrementValue);
+                    return; // Skip if not a valid number
                 }
 
                 let newValue = currentValue + increment;
@@ -290,12 +301,23 @@ class State
                 }
                 this.updateConditionalTriggers(targetId);
             } else if (attrName && decrementValue !== null) {
-                const currentValue = parseFloat(targetElement.getAttribute(`data-${attrName}`) || '0');
+                // NUMERIC COERCION PATCH: Ensure current value is treated as number
+                let currentAttr = targetElement.getAttribute(`data-${attrName}`) || '0';
+                const currentValue = parseFloat(currentAttr);
+                if (isNaN(currentValue)) {
+                    console.warn(`State.js: Attribute data-${attrName} is not numeric:`, currentAttr);
+                    return; // Skip if not a valid number
+                }
                 let decrement;
                 if (decrementValue.includes('calc(')) {
                     decrement = this.evaluateCalc(decrementValue, targetElement);
                 } else {
                     decrement = parseFloat(decrementValue);
+                }
+                // NUMERIC COERCION PATCH: Validate decrement is a valid number
+                if (isNaN(decrement)) {
+                    console.warn(`State.js: Decrement value is not numeric:`, decrementValue);
+                    return; // Skip if not a valid number
                 }
 
                 let newValue = currentValue - decrement;
@@ -470,10 +492,15 @@ class State
         if (!Array.isArray(attrs) || attrs.length === 0) return;
 
         attrs.forEach(attr => {
-            const value = element.getAttribute(`data-${attr.toLowerCase()}`);
+            let value = element.getAttribute(`data-${attr.toLowerCase()}`);
 
             if (value !== null) {
+                // NUMERIC COERCION PATCH: Force numeric strings to become real numbers
+                // This prevents NaN errors in idle/clicker games when doing math with CSS variables
                 const numValue = parseFloat(value);
+                if (!isNaN(numValue)) {
+                    value = numValue; // Coerce to number type
+                }
                 styleTarget.setProperty(`--state-${attr}${idSuffix}`, isNaN(numValue) ? value : numValue);
                 if (!isNaN(numValue)) {
                     const min = parseFloat(element.getAttribute(`data-${attr}-min`) || '0');
