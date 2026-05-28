@@ -64,7 +64,7 @@ class State
 
     stateInit() {
         this.observer = new IntersectionObserver(this.stateObserver);
-        this.states = document.querySelectorAll('body,.enable-state,[data-state],[data-state-toggles],[data-state-watch],[data-state-trigger]');
+        this.states = document.querySelectorAll('body,.enable-state,[data-state],[data-state-toggles],[data-state-watch],[data-state-trigger],[data-state-include]');
         this.states.forEach((element, index) => {
             element.index = index;
             this.setupElement(element);

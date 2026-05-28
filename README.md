@@ -867,6 +867,8 @@ When using `data-state-watch="health,score,level"`:
 | `data-state-persist="true"` | Auto-save/restore to localStorage | `data-state-persist="true"` |
 | `data-state-persist-key="key"` | localStorage key (optional, defaults to element ID) | `data-state-persist-key="my-game"` |
 | `data-state-event="eventName"` | Dispatch CustomEvent as "state:eventName" | `data-state-event="score-up"` |
+| **NEW v1.2.0** | **HTML Includes** | |
+| `data-state-include="path"` | Fetch and inject HTML component from URL | `data-state-include="components/card.html"` |
 | `data-state-toggles="attr1,attr2"` | Boolean state toggles | `data-state-toggles="active,locked"` |
 | `data-state-dimensions="true"` | Track width/height | `data-state-dimensions="true"` |
 | `data-state-media="true"` | Track media playback | `data-state-media="true"` |
@@ -883,6 +885,73 @@ When using `data-state-watch="health,score,level"`:
      data-health-max="100">
 </div>
 ```
+
+---
+
+## New in v1.2.0: HTML Includes
+
+**Build reusable, modular HTML components** - just like any modern framework, but with zero build tools.
+
+HTML Includes let you fetch and inject components declaratively. Create a component once, use it everywhere. Perfect for health bars, UI cards, player stats, inventory items, or any repeating UI pattern.
+
+### Basic Usage
+
+```html
+<!-- Simple include -->
+<div data-state-include="components/health-bar.html"></div>
+
+<!-- Override component attributes -->
+<div data-state-include="components/health-bar.html"
+     id="player-health"
+     data-hp="75"
+     data-hp-max="150"></div>
+
+<!-- Element tag doesn't matter, gets replaced -->
+<i data-state-include="components/icon.html"></i>
+```
+
+### Creating a Component
+
+**components/health-bar.html:**
+```html
+<div class="health-bar"
+     data-state
+     data-state-watch="hp"
+     data-state-var="true"
+     data-hp="100"
+     data-hp-max="100">
+    <div class="fill" style="width: var(--state-hp-percent); background: green; height: 20px;"></div>
+    <span data-state-display="hp"></span>
+</div>
+```
+
+### How It Works
+
+1. **Fetches** HTML from the specified URL
+2. **Caches** content (one request per component per page load)
+3. **Merges** attributes from the include element to the fetched component
+4. **Replaces** the include element with the component
+5. **Initializes** State.js on the injected component and all its children
+
+All State.js features (triggers, persistence, intervals, sounds, etc.) work perfectly in included components!
+
+### Use Cases
+
+- **Health/Mana Bars** - Define once, use for player, enemies, NPCs
+- **Inventory Items** - Consistent item cards across inventory, shop, tooltip
+- **UI Cards** - Stat displays, achievement cards, notifications
+- **Player Stats** - Level, XP, gold displays
+- **Navigation** - Shared headers, footers, menus across pages
+
+### Configuration
+
+| Attribute | Description | Example |
+|-----------|-------------|---------|
+| `data-state-include="path"` | Fetch and inject HTML from URL | `data-state-include="components/card.html"` |
+
+**Note:** Any other attributes on the include element are copied to the injected component, allowing you to override default values.
+
+**Local Development:** HTML Includes require HTTP/HTTPS (browser security prevents `file://` fetching). Run any simple local server - Python's `python -m http.server`, Node's `npx http-server`, or VS Code Live Server. Once deployed, works anywhere with zero config!
 
 ---
 
