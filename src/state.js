@@ -1,4 +1,4 @@
-/* State.js v1.2.0 by iDev Games */
+/* State.js v1.2.1 by iDev Games */
 class State
 {
     states = [];
@@ -208,10 +208,19 @@ class State
     }
 
     setupTriggerElement(element) {
-        const bindAttr = element.getAttribute('data-state-bind');
+        let bindAttr = element.getAttribute('data-state-bind');
         const chainAttr = element.getAttribute('data-state-trigger-chain');
         const condition = element.getAttribute('data-state-condition');
-        if (!bindAttr && !chainAttr) return;
+
+        // Auto-find closest parent with [data-state] if no bind specified
+        if (!bindAttr && !chainAttr) {
+            const parentState = element.closest('[data-state]');
+            if (parentState && parentState.id) {
+                bindAttr = parentState.id;
+            } else {
+                return; // No bind and no parent found
+            }
+        }
 
         element.addEventListener('click', (e) => {
             this.handleTriggerClick(element, bindAttr);
