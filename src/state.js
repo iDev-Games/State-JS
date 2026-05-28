@@ -1,4 +1,4 @@
-/* State.js v1.2.1 by iDev Games */
+/* State.js v1.2.2 by iDev Games */
 class State
 {
     states = [];
@@ -20,7 +20,7 @@ class State
     evaluateCalc(calcExpression, sourceElement) {
         let expr = calcExpression.trim();
         if (expr.startsWith('calc(') && expr.endsWith(')')) {
-            expr = expr.slice(5, -1); // Remove "calc(" and ")"
+            expr = expr.slice(5, -1);
         }
 
         const tempEl = document.createElement('div');
@@ -212,13 +212,12 @@ class State
         const chainAttr = element.getAttribute('data-state-trigger-chain');
         const condition = element.getAttribute('data-state-condition');
 
-        // Auto-find closest parent with [data-state] if no bind specified
         if (!bindAttr && !chainAttr) {
             const parentState = element.closest('[data-state]');
             if (parentState && parentState.id) {
                 bindAttr = parentState.id;
             } else {
-                return; // No bind and no parent found
+                return;
             }
         }
 
@@ -699,7 +698,14 @@ class State
                 this.intervalTriggers.forEach((data, el) => {
                     if (now - data.lastFire >= data.interval) {
                         const condition = el.getAttribute('data-state-condition');
-                        const bindAttr = el.getAttribute('data-state-bind');
+                        let bindAttr = el.getAttribute('data-state-bind');
+
+                        if (condition && !bindAttr) {
+                            const parentState = el.closest('[data-state]');
+                            if (parentState && parentState.id) {
+                                bindAttr = parentState.id;
+                            }
+                        }
 
                         let shouldFire = true;
                         if (condition && bindAttr) {
@@ -965,7 +971,6 @@ class State
             this.setupElement(imported);
         };
 
-        // Check if src is a template ID reference (e.g., "#health-bar")
         if (src.startsWith('#')) {
             const templateId = src.slice(1);
             const template = document.getElementById(templateId);
@@ -976,19 +981,16 @@ class State
             }
 
             if (template.tagName === 'TEMPLATE') {
-                // Clone template content (instant, no fetch)
                 const clone = template.content.cloneNode(true);
                 const temp = document.createElement('div');
                 temp.appendChild(clone);
                 loadAndInject(temp.innerHTML);
             } else {
-                // Use element's innerHTML as template
                 loadAndInject(template.innerHTML);
             }
             return;
         }
 
-        // Otherwise, fetch from URL (cached after first load)
         if (this.includeCache.has(src)) {
             loadAndInject(this.includeCache.get(src));
         } else {

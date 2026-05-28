@@ -1,6 +1,6 @@
 {
   "name": "@idevgames/state-js",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "State.js exposes DOM element states as CSS variables for data-driven animations and game development. Track data attributes, form inputs, media playback, and visibility - the missing piece for pure CSS/HTML game development.",
   "main": "src/state.js",
   "repository": {
