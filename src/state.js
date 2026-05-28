@@ -956,6 +956,30 @@ class State
             this.setupElement(imported);
         };
 
+        // Check if src is a template ID reference (e.g., "#health-bar")
+        if (src.startsWith('#')) {
+            const templateId = src.slice(1);
+            const template = document.getElementById(templateId);
+
+            if (!template) {
+                console.warn('State.js: Template not found:', src);
+                return;
+            }
+
+            if (template.tagName === 'TEMPLATE') {
+                // Clone template content (instant, no fetch)
+                const clone = template.content.cloneNode(true);
+                const temp = document.createElement('div');
+                temp.appendChild(clone);
+                loadAndInject(temp.innerHTML);
+            } else {
+                // Use element's innerHTML as template
+                loadAndInject(template.innerHTML);
+            }
+            return;
+        }
+
+        // Otherwise, fetch from URL (cached after first load)
         if (this.includeCache.has(src)) {
             loadAndInject(this.includeCache.get(src));
         } else {

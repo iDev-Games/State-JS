@@ -897,8 +897,11 @@ HTML Includes let you fetch and inject components declaratively. Create a compon
 ### Basic Usage
 
 ```html
-<!-- Simple include -->
+<!-- From external file (cached after first load) -->
 <div data-state-include="components/health-bar.html"></div>
+
+<!-- From inline template (instant, zero latency) -->
+<div data-state-include="#health-bar-template"></div>
 
 <!-- Override component attributes -->
 <div data-state-include="components/health-bar.html"
@@ -911,6 +914,8 @@ HTML Includes let you fetch and inject components declaratively. Create a compon
 ```
 
 ### Creating a Component
+
+**Option 1: External File (for modularity)**
 
 **components/health-bar.html:**
 ```html
@@ -925,13 +930,41 @@ HTML Includes let you fetch and inject components declaratively. Create a compon
 </div>
 ```
 
+**Option 2: Inline Template (for performance)**
+
+```html
+<!-- Define template once in your HTML -->
+<template id="health-bar-template">
+    <div class="health-bar"
+         data-state
+         data-state-watch="hp"
+         data-state-var="true"
+         data-hp="100"
+         data-hp-max="100">
+        <div class="fill" style="width: var(--state-hp-percent); background: green; height: 20px;"></div>
+        <span data-state-display="hp"></span>
+    </div>
+</template>
+
+<!-- Use it anywhere (instant, no network request) -->
+<div data-state-include="#health-bar-template" data-hp="75"></div>
+<div data-state-include="#health-bar-template" data-hp="50"></div>
+<div data-state-include="#health-bar-template" data-hp="100"></div>
+```
+
 ### How It Works
 
-1. **Fetches** HTML from the specified URL
-2. **Caches** content (one request per component per page load)
-3. **Merges** attributes from the include element to the fetched component
-4. **Replaces** the include element with the component
-5. **Initializes** State.js on the injected component and all its children
+**Template Mode (`#id`):**
+1. **Clones** from `<template>` tag or element by ID (instant, zero latency)
+2. **Merges** attributes from include element to cloned component
+3. **Replaces** include element with component
+4. **Initializes** State.js on the injected component
+
+**Fetch Mode (`path.html`):**
+1. **Fetches** HTML from URL (cached after first load)
+2. **Merges** attributes from include element to fetched component
+3. **Replaces** include element with component
+4. **Initializes** State.js on the injected component
 
 All State.js features (triggers, persistence, intervals, sounds, etc.) work perfectly in included components!
 
@@ -947,11 +980,24 @@ All State.js features (triggers, persistence, intervals, sounds, etc.) work perf
 
 | Attribute | Description | Example |
 |-----------|-------------|---------|
-| `data-state-include="path"` | Fetch and inject HTML from URL | `data-state-include="components/card.html"` |
+| `data-state-include="path.html"` | Fetch and inject HTML from URL | `data-state-include="components/card.html"` |
+| `data-state-include="#id"` | Clone from template or element by ID | `data-state-include="#card-template"` |
 
 **Note:** Any other attributes on the include element are copied to the injected component, allowing you to override default values.
 
-**Local Development:** HTML Includes require HTTP/HTTPS (browser security prevents `file://` fetching). Run any simple local server - Python's `python -m http.server`, Node's `npx http-server`, or VS Code Live Server. Once deployed, works anywhere with zero config!
+### Performance Strategy
+
+**Use templates (`#id`) for:**
+- Critical, frequently-used components (zero latency)
+- Components needed immediately on page load
+- Single-page apps where all components fit in initial HTML
+
+**Use files (`path.html`) for:**
+- Large component libraries (keeps HTML small)
+- Components used across multiple pages (modularity)
+- Production apps with proper HTTP caching
+
+**Local Development:** File-based includes require HTTP/HTTPS (browser security prevents `file://` fetching). Run any simple local server - Python's `python -m http.server`, Node's `npx http-server`, or VS Code Live Server. Template-based includes work anywhere, including `file://`!
 
 ---
 
