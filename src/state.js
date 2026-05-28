@@ -1,4 +1,4 @@
-/* State.js v1.1.0 by iDev Games */
+/* State.js v1.2.0 by iDev Games */
 class State
 {
     states = [];
@@ -72,6 +72,11 @@ class State
     }
 
     setupElement(element) {
+        if (element.hasAttribute('data-state-include')) {
+            this.setupInclude(element);
+            return;
+        }
+
         if (document.body !== element) {
             if (!element.classList.contains('state')) {
                 element.classList.add('state', 'state-visible');
@@ -918,6 +923,54 @@ class State
                 if (soundName.startsWith('http') || soundName.endsWith('.mp3') || soundName.endsWith('.wav')) {
                     console.warn('State.js: External sound URLs not yet supported:', soundName);
                 }
+        }
+    }
+
+    includeCache = new Map();
+
+    setupInclude(element) {
+        const src = element.getAttribute('data-state-include');
+        if (!src) return;
+
+        const loadAndInject = (html) => {
+            const temp = document.createElement('div');
+            temp.innerHTML = html.trim();
+            const imported = temp.firstElementChild;
+
+            if (!imported) {
+                console.warn('State.js: Invalid include content:', src);
+                return;
+            }
+
+            Array.from(element.attributes).forEach(attr => {
+                if (!attr.name.startsWith('data-state-include')) {
+                    imported.setAttribute(attr.name, attr.value);
+                }
+            });
+
+            element.replaceWith(imported);
+
+            imported.querySelectorAll('[data-state],[data-state-trigger]').forEach(el => {
+                this.setupElement(el);
+            });
+            this.setupElement(imported);
+        };
+
+        if (this.includeCache.has(src)) {
+            loadAndInject(this.includeCache.get(src));
+        } else {
+            fetch(src)
+                .then(r => {
+                    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                    return r.text();
+                })
+                .then(html => {
+                    this.includeCache.set(src, html);
+                    loadAndInject(html);
+                })
+                .catch(e => {
+                    console.warn('State.js: Failed to load include:', src, e);
+                });
         }
     }
 

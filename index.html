@@ -423,7 +423,7 @@
 
                     <hr id="headerLine" />
 
-                    <h2 id="documentation">Documentation <sup>v1.1.0</sup></h2>
+                    <h2 id="documentation">Documentation <sup>v1.2.0</sup></h2>
                 </div>
             </div>
 
@@ -1270,6 +1270,78 @@ document.addEventListener('state:score-up', (e) =&gt; {
     console.log('Score increased!', e.detail);
 });
 &lt;/script&gt;</pre>
+                    </div>
+                </div>
+            </div>
+
+            <hr/>
+
+            <div class="container alignCenter background8" style="background: #0a2e1a;">
+                <div class="box boxBG title">
+                    <h2>New in v1.2.0: HTML Component Includes</h2>
+                </div>
+                <div class="box boxBG fadeIn demo-interactive" data-state>
+                    <p><strong>data-state-include</strong> enables modular, reusable HTML components without build tools!</p>
+
+                    <div style="margin: 30px 0;">
+                        <h3 style="color: #fff; margin-bottom: 20px;">Why Component Includes?</h3>
+                        <div style="padding: 20px; background: rgba(16,185,129,0.1); border-radius: 8px; border: 2px solid #10b981;">
+                            <p style="color: #ccc; margin: 10px 0;">
+                                <strong style="color: #34d399;">The Problem:</strong> React developers say "State.js won't scale" because HTML lacks modularity.<br/>
+                                <strong style="color: #34d399;">The Solution:</strong> Fetch and inject HTML components declaratively - no build step required!
+                            </p>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 30px; color: #fff;">Basic Usage:</h3>
+                    <div class="code-box">
+                        <pre>&lt;!-- Simple include --&gt;
+&lt;div data-state-include="components/health-bar.html"&gt;&lt;/div&gt;
+
+&lt;!-- Override component attributes --&gt;
+&lt;div data-state-include="components/health-bar.html"
+     id="player-health"
+     data-hp="75"
+     data-hp-max="150"&gt;&lt;/div&gt;
+
+&lt;!-- Element tag doesn't matter, gets replaced --&gt;
+&lt;i data-state-include="components/icon.html"&gt;&lt;/i&gt;</pre>
+                    </div>
+
+                    <h3 style="margin-top: 30px; color: #fff;">Example Component:</h3>
+                    <div class="code-box">
+                        <pre>&lt;!-- components/health-bar.html --&gt;
+&lt;div class="health-bar"
+     data-state
+     data-state-watch="hp"
+     data-state-var="true"
+     data-hp="100"
+     data-hp-max="100"&gt;
+    &lt;div class="fill"
+         style="width: var(--state-hp-percent);
+                background: green;
+                height: 20px;"&gt;&lt;/div&gt;
+    &lt;span data-state-display="hp"&gt;&lt;/span&gt;
+&lt;/div&gt;</pre>
+                    </div>
+
+                    <div style="margin-top: 30px; padding: 20px; background: rgba(16,185,129,0.1); border-radius: 8px; border: 2px solid #10b981;">
+                        <h4 style="color: #34d399; margin-bottom: 15px;">How It Works:</h4>
+                        <ul style="color: #ccc; margin-left: 20px;">
+                            <li>Fetches HTML from the specified URL</li>
+                            <li>Caches content (one request per component per page load)</li>
+                            <li>Merges attributes from include element to fetched component</li>
+                            <li>Replaces the include element with the component</li>
+                            <li>All State.js features work in included components!</li>
+                        </ul>
+                    </div>
+
+                    <div style="margin-top: 30px; padding: 20px; background: rgba(139,92,246,0.1); border-radius: 8px; border: 2px solid #8b5cf6;">
+                        <strong style="color: #a78bfa;">Pro Tip:</strong>
+                        <p style="color: #ccc; margin: 10px 0;">
+                            Create a <code>/components</code> folder with reusable HTML snippets. Use includes for health bars,
+                            inventory items, UI cards, player stats - anything you need multiple times across pages!
+                        </p>
                     </div>
                 </div>
             </div>
