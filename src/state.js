@@ -1,4 +1,4 @@
-/* State.js v1.3.0 by iDev Games */
+/* State.js v1.3.1 by iDev Games */
 class State
 {
     states = [];
