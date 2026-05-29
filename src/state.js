@@ -1,4 +1,4 @@
-/* State.js v1.3.3 by iDev Games */
+/* State.js v1.3.4 by iDev Games */
 class State
 {
     states = [];
@@ -716,36 +716,38 @@ class State
             this.intervalScheduler = setInterval(() => {
                 const now = performance.now();
                 this.intervalTriggers.forEach((data, el) => {
-                    if (now - data.lastFire >= data.interval) {
-                        const condition = el.getAttribute('data-state-condition');
-                        let bindAttr = el.getAttribute('data-state-bind');
+                    const condition = el.getAttribute('data-state-condition');
+                    let bindAttr = el.getAttribute('data-state-bind');
 
-                        if (condition && !bindAttr) {
-                            const parentState = el.closest('[data-state]');
-                            if (parentState && parentState.id) {
-                                bindAttr = parentState.id;
-                            }
+                    if (condition && !bindAttr) {
+                        const parentState = el.closest('[data-state]');
+                        if (parentState && parentState.id) {
+                            bindAttr = parentState.id;
                         }
+                    }
 
-                        let shouldFire = true;
-                        if (condition && bindAttr) {
-                            const targetIds = bindAttr.split(',').map(id => id.trim());
-                            const targetElement = document.getElementById(targetIds[0]);
-                            if (targetElement) {
-                                shouldFire = this.evaluateCondition(condition, targetElement);
-                            }
+                    let shouldFire = true;
+                    if (condition && bindAttr) {
+                        const targetIds = bindAttr.split(',').map(id => id.trim());
+                        const targetElement = document.getElementById(targetIds[0]);
+                        if (targetElement) {
+                            shouldFire = this.evaluateCondition(condition, targetElement);
                         }
+                    }
 
-                        // Reset timer on false→true transition
-                        if (condition && shouldFire && !data.lastConditionState) {
-                            data.lastFire = now;
-                        }
-                        data.lastConditionState = shouldFire;
+                    // Track condition state transitions
+                    const conditionChanged = shouldFire !== data.lastConditionState;
+                    data.lastConditionState = shouldFire;
 
-                        if (shouldFire) {
-                            el.click();
-                            data.lastFire = now;
-                        }
+                    // Reset timer when condition becomes true
+                    if (condition && shouldFire && conditionChanged) {
+                        data.lastFire = now;
+                    }
+
+                    // Fire if condition is met AND interval has elapsed
+                    if (shouldFire && (now - data.lastFire >= data.interval)) {
+                        el.click();
+                        data.lastFire = now;
                     }
                 });
             }, 16);
