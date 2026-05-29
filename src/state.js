@@ -17,6 +17,15 @@ class State
         this.observer = new IntersectionObserver(this.stateObserver);
     }
 
+    decodeHTMLEntities(str) {
+        return str
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>')
+            .replace(/&amp;/g, '&')
+            .replace(/&quot;/g, '"')
+            .replace(/&apos;/g, "'");
+    }
+
     evaluateCalc(calcExpression, sourceElement) {
         let expr = calcExpression.trim();
         if (expr.startsWith('calc(') && expr.endsWith(')')) {
@@ -44,7 +53,8 @@ class State
 
     evaluateCondition(conditionStr, sourceElement) {
         try {
-            const processed = conditionStr.replace(/([a-zA-Z][\w-]*)/g, (match) => {
+            const decoded = this.decodeHTMLEntities(conditionStr);
+            const processed = decoded.replace(/([a-zA-Z][\w-]*)/g, (match) => {
                 const keywords = ['true', 'false', 'null', 'undefined', 'and', 'or', 'not'];
                 if (keywords.includes(match.toLowerCase())) {
                     return match;
@@ -858,7 +868,10 @@ class State
         const parsed = [];
 
         computations.forEach(comp => {
-            const [name, expr] = comp.split('=').map(s => s.trim());
+            const eqIndex = comp.indexOf('=');
+            if (eqIndex === -1) return;
+            const name = comp.substring(0, eqIndex).trim();
+            const expr = comp.substring(eqIndex + 1).trim();
             if (name && expr) {
                 parsed.push({ name, expr });
             }
@@ -900,7 +913,8 @@ class State
 
     evaluateExpression(expr, sourceElement) {
         try {
-            const processed = expr.replace(/([a-zA-Z][\w-]*)/g, (match) => {
+            const decoded = this.decodeHTMLEntities(expr);
+            const processed = decoded.replace(/([a-zA-Z][\w-]*)/g, (match) => {
                 const keywords = ['true', 'false', 'null', 'undefined'];
                 if (keywords.includes(match.toLowerCase())) {
                     return match;
