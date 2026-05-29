@@ -1,4 +1,4 @@
-/* State.js v1.3.2 by iDev Games */
+/* State.js v1.3.3 by iDev Games */
 class State
 {
     states = [];
@@ -708,7 +708,8 @@ class State
         this.intervalTriggers.set(element, {
             interval: ms,
             lastFire: performance.now(),
-            element: element
+            element: element,
+            lastConditionState: false
         });
 
         if (!this.intervalScheduler) {
@@ -734,6 +735,12 @@ class State
                                 shouldFire = this.evaluateCondition(condition, targetElement);
                             }
                         }
+
+                        // Reset timer on false→true transition
+                        if (condition && shouldFire && !data.lastConditionState) {
+                            data.lastFire = now;
+                        }
+                        data.lastConditionState = shouldFire;
 
                         if (shouldFire) {
                             el.click();
