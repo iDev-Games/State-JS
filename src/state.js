@@ -1,4 +1,4 @@
-/* State.js v1.3.1 by iDev Games */
+/* State.js v1.3.2 by iDev Games */
 class State
 {
     states = [];
@@ -737,8 +737,8 @@ class State
 
                         if (shouldFire) {
                             el.click();
+                            data.lastFire = now;
                         }
-                        data.lastFire = now;
                     }
                 });
             }, 16);
