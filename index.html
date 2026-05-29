@@ -423,7 +423,7 @@
 
                     <hr id="headerLine" />
 
-                    <h2 id="documentation">Documentation <sup>v1.2.2</sup></h2>
+                    <h2 id="documentation">Documentation <sup>v1.3.0</sup></h2>
                 </div>
             </div>
 
@@ -1363,6 +1363,114 @@ document.addEventListener('state:score-up', (e) =&gt; {
                             Use <strong>files (path.html)</strong> for large component libraries across multiple pages (modularity).
                             Template-based includes work anywhere, even with file:// protocol!
                         </p>
+                    </div>
+                </div>
+            </div>
+
+            <hr/>
+
+            <div class="container alignCenter background9" style="background: #1a0a2e;">
+                <div class="box boxBG title">
+                    <h2>New in v1.3.0: Computed State</h2>
+                </div>
+                <div class="box boxBG fadeIn demo-interactive" data-state>
+                    <p><strong>data-state-compute</strong> automatically calculates derived values from your data - perfect for percentages, damage formulas, and game logic!</p>
+
+                    <h3 style="margin-top: 30px; color: #fff;">Interactive Demo:</h3>
+
+                    <div id="compute-demo"
+                         data-state
+                         data-state-watch="hp,maxHp,attack,defense"
+                         data-state-compute="hpPercent = hp / maxHp * 100; damage = (attack * 2) - defense; status = hp > 0 ? 'Alive' : 'Dead'"
+                         data-hp="75"
+                         data-maxHp="100"
+                         data-attack="20"
+                         data-defense="10"
+                         style="padding: 20px; background: rgba(138,43,226,0.1); border-radius: 8px; border: 2px solid #8a2be2; margin: 20px 0;">
+
+                        <div style="margin-bottom: 20px;">
+                            <div style="color: #fff; margin-bottom: 10px;">
+                                HP: <span data-state-display="hp">75</span> / <span>100</span>
+                                (<span data-state-display="hpPercent" style="color: #8a2be2; font-weight: bold;">75</span>%)
+                            </div>
+                            <div style="background: rgba(255,255,255,0.1); height: 20px; border-radius: 4px; overflow: hidden;">
+                                <div style="background: linear-gradient(90deg, #8a2be2, #da70d6); height: 100%; transition: width 0.3s; width: var(--state-hpPercent);"></div>
+                            </div>
+                        </div>
+
+                        <div style="color: #ccc; margin: 15px 0;">
+                            <div>Attack: <span data-state-display="attack" style="color: #ff6b6b;">20</span></div>
+                            <div>Defense: <span data-state-display="defense" style="color: #4ecdc4;">10</span></div>
+                            <div>Computed Damage: <span data-state-display="damage" style="color: #ffe66d; font-weight: bold;">30</span></div>
+                            <div>Status: <span data-state-display="status" style="color: #8a2be2; font-weight: bold;">Alive</span></div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px;">
+                            <button data-state-trigger data-state-attr="hp" data-state-increment="-15" style="padding: 10px; background: #ff6b6b; border: none; border-radius: 4px; color: white; cursor: pointer;">Take Damage (-15 HP)</button>
+                            <button data-state-trigger data-state-attr="hp" data-state-increment="20" style="padding: 10px; background: #51cf66; border: none; border-radius: 4px; color: white; cursor: pointer;">Heal (+20 HP)</button>
+                            <button data-state-trigger data-state-attr="attack" data-state-increment="5" style="padding: 10px; background: #ff6b6b; border: none; border-radius: 4px; color: white; cursor: pointer;">+ Attack</button>
+                            <button data-state-trigger data-state-attr="defense" data-state-increment="5" style="padding: 10px; background: #4ecdc4; border: none; border-radius: 4px; color: white; cursor: pointer;">+ Defense</button>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 30px; color: #fff;">Code Example:</h3>
+                    <div class="code-box">
+                        <pre>&lt;div data-state
+     data-state-watch="hp,maxHp,attack,defense"
+     data-state-compute="
+         hpPercent = hp / maxHp * 100;
+         damage = (attack * 2) - defense;
+         status = hp > 0 ? 'Alive' : 'Dead'
+     "
+     data-hp="75"
+     data-maxHp="100"
+     data-attack="20"
+     data-defense="10"&gt;
+
+    &lt;!-- HP bar width automatically updates --&gt;
+    &lt;div style="width: var(--state-hpPercent);"&gt;&lt;/div&gt;
+
+    &lt;!-- Display computed values --&gt;
+    &lt;span data-state-display="hpPercent"&gt;&lt;/span&gt;%
+    &lt;span data-state-display="damage"&gt;&lt;/span&gt;
+    &lt;span data-state-display="status"&gt;&lt;/span&gt;
+&lt;/div&gt;</pre>
+                    </div>
+
+                    <div style="margin-top: 30px; padding: 20px; background: rgba(138,43,226,0.1); border-radius: 8px; border: 2px solid #8a2be2;">
+                        <h4 style="color: #da70d6; margin-bottom: 15px;">Supported Expressions:</h4>
+                        <ul style="color: #ccc; margin-left: 20px; line-height: 1.8;">
+                            <li><strong>Math:</strong> +, -, *, /, %, ()</li>
+                            <li><strong>Comparisons:</strong> &lt;, &gt;, &lt;=, &gt;=, ==, !=</li>
+                            <li><strong>Logical:</strong> &&, ||, !</li>
+                            <li><strong>Ternary:</strong> condition ? valueA : valueB</li>
+                            <li><strong>References:</strong> Use attribute names directly</li>
+                        </ul>
+                    </div>
+
+                    <div style="margin-top: 30px; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                        <strong style="color: #da70d6;">Pro Tip:</strong>
+                        <p style="color: #ccc; margin: 10px 0;">
+                            Use computed state for health percentages, damage calculations, level-up requirements,
+                            resource management - any derived value that needs to stay in sync with its dependencies!
+                        </p>
+                    </div>
+
+                    <div style="margin-top: 30px; padding: 20px; background: rgba(0,0,0,0.3); border-radius: 8px;">
+                        <strong style="color: #fff;">Debug API (v1.3.0):</strong>
+                        <p style="color: #ccc; margin: 10px 0;">
+                            Open your browser console and try:
+                        </p>
+                        <div class="code-box">
+                            <pre>// Inspect all reactive elements
+State.inspectAll()
+
+// Inspect specific element
+State.inspect('#compute-demo')
+
+// Trace HP changes
+State.trace('hp', true)</pre>
+                        </div>
                     </div>
                 </div>
             </div>

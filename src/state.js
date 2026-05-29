@@ -1,4 +1,4 @@
-/* State.js v1.2.2 by iDev Games */
+/* State.js v1.3.0 by iDev Games */
 class State
 {
     states = [];
@@ -106,6 +106,9 @@ class State
         }
         if (element.hasAttribute('data-state-persist')) {
             this.setupPersist(element);
+        }
+        if (element.hasAttribute('data-state-compute')) {
+            this.setupComputedState(element);
         }
         this.updateElement(element);
     }
@@ -330,6 +333,7 @@ class State
 
                 const oldValue = currentAttr;
                 targetElement.setAttribute(`data-${attrName}`, String(newValue));
+                this.logTrace(targetElement, attrName, oldValue, String(newValue));
                 this.dispatchStateEvent(triggerElement, bindAttr, attrName, oldValue, String(newValue));
                 const displayElement = targetElement.querySelector(`[data-state-display="${attrName}"]`) ||
                                      document.getElementById(`${targetId}-${attrName}`);
@@ -367,6 +371,7 @@ class State
 
                 const oldValue = currentAttr;
                 targetElement.setAttribute(`data-${attrName}`, String(newValue));
+                this.logTrace(targetElement, attrName, oldValue, String(newValue));
                 this.dispatchStateEvent(triggerElement, bindAttr, attrName, oldValue, String(newValue));
                 const displayElement = targetElement.querySelector(`[data-state-display="${attrName}"]`) ||
                                      document.getElementById(`${targetId}-${attrName}`);
@@ -496,6 +501,10 @@ class State
 
         if (config.toggleAttrs.length > 0) {
             this.updateToggleVars(element, config, styleTarget, idSuffix);
+        }
+
+        if (element.hasAttribute('data-state-compute')) {
+            this.updateComputedState(element, styleTarget, idSuffix);
         }
 
         if (this.formElements.has(element)) {
@@ -836,6 +845,81 @@ class State
             }
         });
     }
+
+    computedStateCache = new Map();
+    computeDepth = 0;
+    maxComputeDepth = 10;
+
+    setupComputedState(element) {
+        const computeAttr = element.getAttribute('data-state-compute');
+        if (!computeAttr) return;
+
+        const computations = computeAttr.split(';').map(c => c.trim()).filter(c => c.length > 0);
+        const parsed = [];
+
+        computations.forEach(comp => {
+            const [name, expr] = comp.split('=').map(s => s.trim());
+            if (name && expr) {
+                parsed.push({ name, expr });
+            }
+        });
+
+        if (parsed.length > 0) {
+            this.computedStateCache.set(element, parsed);
+        }
+    }
+
+    updateComputedState(element, styleTarget, idSuffix) {
+        const computations = this.computedStateCache.get(element);
+        if (!computations) return;
+
+        if (this.computeDepth >= this.maxComputeDepth) {
+            console.warn('State.js: Max compute depth reached, possible circular dependency');
+            return;
+        }
+
+        this.computeDepth++;
+
+        computations.forEach(({ name, expr }) => {
+            try {
+                const value = this.evaluateExpression(expr, element);
+                element.setAttribute(`data-${name}`, String(value));
+                styleTarget.setProperty(`--state-${name}${idSuffix}`, value);
+
+                const displayElements = element.querySelectorAll(`[data-state-display="${name}"]`);
+                displayElements.forEach(displayEl => {
+                    displayEl.textContent = value;
+                });
+            } catch (e) {
+                console.warn('State.js: Error computing', name, ':', e);
+            }
+        });
+
+        this.computeDepth--;
+    }
+
+    evaluateExpression(expr, sourceElement) {
+        try {
+            const processed = expr.replace(/([a-zA-Z][\w-]*)/g, (match) => {
+                const keywords = ['true', 'false', 'null', 'undefined'];
+                if (keywords.includes(match.toLowerCase())) {
+                    return match;
+                }
+                const value = sourceElement.getAttribute(`data-${match}`);
+                if (value !== null) {
+                    const numValue = parseFloat(value);
+                    return isNaN(numValue) ? `"${value}"` : numValue;
+                }
+                return match;
+            });
+
+            return Function('"use strict"; return (' + processed + ')')();
+        } catch (e) {
+            console.warn('State.js: Invalid expression:', expr, e);
+            return 0;
+        }
+    }
+
     audioContext = null;
     soundBuffers = {};
 
@@ -1109,6 +1193,68 @@ class State
         });
 
         document.dispatchEvent(event);
+    }
+
+    traceEnabled = new Map();
+
+    inspectAll() {
+        const result = [];
+        this.states.forEach(element => {
+            if (element && element.id) {
+                result.push(this.inspect(`#${element.id}`));
+            }
+        });
+        return result;
+    }
+
+    inspect(selector) {
+        const element = typeof selector === 'string' ? document.querySelector(selector) : selector;
+        if (!element) return null;
+
+        const config = this.getStateConfig(element);
+        const state = {};
+
+        const watchAttrs = config.watchAttrs || [];
+        watchAttrs.forEach(attr => {
+            const value = element.getAttribute(`data-${attr}`);
+            if (value !== null) {
+                state[attr] = value;
+            }
+        });
+
+        config.toggleAttrs.forEach(attr => {
+            const value = element.getAttribute(`data-${attr}`);
+            state[attr] = value;
+        });
+
+        return {
+            element: element,
+            id: element.id || '(no id)',
+            state: state,
+            config: config
+        };
+    }
+
+    trace(attrName, enabled = true) {
+        if (enabled) {
+            this.traceEnabled.set(attrName, true);
+            console.log(`State.js: Tracing enabled for attribute "${attrName}"`);
+        } else {
+            this.traceEnabled.delete(attrName);
+            console.log(`State.js: Tracing disabled for attribute "${attrName}"`);
+        }
+    }
+
+    logTrace(element, attrName, oldValue, newValue) {
+        if (this.traceEnabled.has(attrName)) {
+            console.log(`State.js [${attrName}]:`, {
+                element: element,
+                id: element.id || '(no id)',
+                attribute: attrName,
+                oldValue: oldValue,
+                newValue: newValue
+            });
+        }
     }
 }
 

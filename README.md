@@ -1001,6 +1001,181 @@ All State.js features (triggers, persistence, intervals, sounds, etc.) work perf
 
 ---
 
+## New in v1.3.0: Computed State & Debug API
+
+### Computed State
+
+**Automatically calculate derived values** from your data attributes - no manual updates needed!
+
+Computed state keeps calculated values in sync with their dependencies. Perfect for health percentages, damage calculations, level-up requirements, or any derived game logic.
+
+#### Basic Usage
+
+```html
+<div id="player"
+     data-state
+     data-state-watch="hp,maxHp"
+     data-state-compute="hpPercent = hp / maxHp * 100"
+     data-hp="75"
+     data-maxHp="100">
+
+    <div class="health-bar" style="width: var(--state-hpPercent)%;"></div>
+    <span>HP: <span data-state-display="hpPercent"></span>%</span>
+</div>
+```
+
+#### Multiple Computations
+
+Use semicolons to define multiple computed values:
+
+```html
+<div data-state
+     data-state-watch="hp,maxHp,level"
+     data-state-compute="
+         hpPercent = hp / maxHp * 100;
+         isCritical = hp < 20;
+         nextLevelXp = level * 100
+     "
+     data-hp="15"
+     data-maxHp="100"
+     data-level="5">
+</div>
+```
+
+#### Supported Expressions
+
+- **Math operators**: `+`, `-`, `*`, `/`, `%`, `()`
+- **Comparisons**: `<`, `>`, `<=`, `>=`, `==`, `!=`
+- **Logical operators**: `&&`, `||`, `!`
+- **Ternary**: `condition ? valueA : valueB`
+- **Attribute references**: Use attribute names directly (e.g., `hp`, `maxHp`)
+
+#### Examples
+
+```html
+<!-- Percentage calculation -->
+<div data-state-compute="progress = completed / total * 100">
+
+<!-- Ternary operator -->
+<div data-state-compute="status = hp > 0 ? 'alive' : 'dead'">
+
+<!-- Complex formula -->
+<div data-state-compute="damage = (attack * 2) - defense">
+
+<!-- Boolean check -->
+<div data-state-compute="canLevelUp = xp >= level * 100">
+
+<!-- Multiple dependencies -->
+<div data-state-compute="totalStats = strength + agility + intelligence">
+</div>
+```
+
+#### How It Works
+
+1. **Parse** - State.js parses your compute expressions on setup
+2. **Auto-update** - When any dependency changes, computed values recalculate automatically
+3. **Expose** - Computed values become `data-${name}` attributes and `--state-${name}` CSS variables
+4. **Display** - Use `data-state-display` to show computed values in your UI
+
+#### Use Cases
+
+- **Health/Mana percentages** for progress bars
+- **Damage calculations** for combat systems
+- **Level-up requirements** (XP needed, stats gained)
+- **Resource management** (inventory space, currency conversions)
+- **Status checks** (isCritical, canAfford, isComplete)
+- **Score calculations** (combos, multipliers, totals)
+
+---
+
+### Debug API
+
+**Console tools for inspecting and debugging reactive state** - perfect for development and testing.
+
+State.js provides a JavaScript API accessible via the browser console for debugging your application state.
+
+#### State.inspectAll()
+
+Returns an array of all reactive elements with their current state:
+
+```javascript
+// In browser console
+State.inspectAll()
+/* Returns:
+[
+  {
+    element: <div id="player">,
+    id: "player",
+    state: { hp: "75", maxHp: "100", hpPercent: "75" },
+    config: { ... }
+  },
+  ...
+]
+*/
+```
+
+#### State.inspect(selector)
+
+Inspect a specific element's state:
+
+```javascript
+State.inspect('#player')
+/* Returns:
+{
+  element: <div id="player">,
+  id: "player",
+  state: { hp: "75", maxHp: "100", hpPercent: "75" },
+  config: { watchAttrs: ["hp", "maxHp"], ... }
+}
+*/
+```
+
+#### State.trace(attrName, enabled)
+
+Enable/disable console logging for attribute changes:
+
+```javascript
+// Enable tracing for HP changes
+State.trace('hp', true)
+// Now every time data-hp changes, you'll see:
+// State.js [hp]: { element: <div>, id: "player", attribute: "hp", oldValue: "75", newValue: "65" }
+
+// Disable tracing
+State.trace('hp', false)
+```
+
+#### Usage Examples
+
+```javascript
+// Debug all reactive elements
+const elements = State.inspectAll()
+console.table(elements.map(e => e.state))
+
+// Check specific element state
+const player = State.inspect('#player')
+console.log('Player HP:', player.state.hp)
+
+// Trace multiple attributes
+State.trace('hp')
+State.trace('gold')
+State.trace('xp')
+// Now see all changes to hp, gold, and xp in real-time
+
+// Find elements with low HP
+State.inspectAll()
+  .filter(e => parseFloat(e.state.hp) < 20)
+  .forEach(e => console.log(`${e.id} is critical!`))
+```
+
+#### Use Cases
+
+- **Debugging** - See all state changes in real-time
+- **Testing** - Verify attribute values during development
+- **Optimization** - Track which attributes update frequently
+- **Learning** - Understand how State.js works internally
+
+---
+
 ## State-Animations.css
 
 State.js includes **state-animations.css** - a companion stylesheet with predefined animations for common UI patterns and interactive elements.
