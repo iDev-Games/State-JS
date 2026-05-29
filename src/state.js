@@ -1,4 +1,4 @@
-/* State.js v1.3.4 by iDev Games */
+/* State.js v1.3.5 by iDev Games */
 class State
 {
     states = [];
@@ -74,7 +74,7 @@ class State
 
     stateInit() {
         this.observer = new IntersectionObserver(this.stateObserver);
-        this.states = document.querySelectorAll('body,.enable-state,[data-state],[data-state-toggles],[data-state-watch],[data-state-trigger],[data-state-include]');
+        this.states = document.querySelectorAll('body,.enable-state,[data-state],[data-state-toggles],[data-state-watch],[data-state-trigger],[data-state-interval],[data-state-include]');
         this.states.forEach((element, index) => {
             element.index = index;
             this.setupElement(element);
@@ -705,11 +705,31 @@ class State
             return;
         }
 
+        // Evaluate initial condition state
+        const condition = element.getAttribute('data-state-condition');
+        let initialConditionState = true; // default if no condition
+        if (condition) {
+            let bindAttr = element.getAttribute('data-state-bind');
+            if (!bindAttr) {
+                const parentState = element.closest('[data-state]');
+                if (parentState && parentState.id) {
+                    bindAttr = parentState.id;
+                }
+            }
+            if (bindAttr) {
+                const targetIds = bindAttr.split(',').map(id => id.trim());
+                const targetElement = document.getElementById(targetIds[0]);
+                if (targetElement) {
+                    initialConditionState = this.evaluateCondition(condition, targetElement);
+                }
+            }
+        }
+
         this.intervalTriggers.set(element, {
             interval: ms,
             lastFire: performance.now(),
             element: element,
-            lastConditionState: false
+            lastConditionState: initialConditionState
         });
 
         if (!this.intervalScheduler) {
