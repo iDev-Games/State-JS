@@ -874,6 +874,10 @@ When using `data-state-watch="health,score,level"`:
 | `data-state-media="true"` | Track media playback | `data-state-media="true"` |
 | `data-state-global="true"` | Set CSS vars on `:root` | `data-state-global="true"` |
 | `data-state-increment="10"` | Update increment for selectors | `data-state-increment="10"` |
+| **NEW v1.4.0** | **Event-Based Triggers** | |
+| `data-state-trigger-on="eventName"` | Fire trigger on DOM event (default: "click") | `data-state-trigger-on="mouseenter"` or `"input"` or `"focus"` |
+| `data-state-debounce="ms"` | Delay trigger execution until events stop (in milliseconds) | `data-state-debounce="500"` |
+| `data-state-throttle="ms"` | Limit trigger firing rate (max once per N ms) | `data-state-throttle="200"` |
 
 ### Per-State Configuration
 
@@ -1173,6 +1177,373 @@ State.inspectAll()
 - **Testing** - Verify attribute values during development
 - **Optimization** - Track which attributes update frequently
 - **Learning** - Understand how State.js works internally
+
+---
+
+## New in v1.4.0: Event-Based Triggers
+
+**Fire triggers on ANY DOM event** - not just clicks! Listen to hover, focus, input, scroll, and more with built-in debounce/throttle support.
+
+Event-based triggers let you respond to any DOM event declaratively. Perfect for form interactions, hover effects, scroll tracking, visibility detection, and real-time input validation - all without writing JavaScript event listeners.
+
+### Basic Usage
+
+Use `data-state-trigger-on` to specify which event should fire the trigger:
+
+```html
+<!-- Default: click (backward compatible) -->
+<button data-state-trigger
+        data-state-bind="player"
+        data-state-attr="score"
+        data-state-increment="1">
+    Click to score
+</button>
+
+<!-- Explicit click -->
+<button data-state-trigger
+        data-state-trigger-on="click"
+        data-state-bind="player"
+        data-state-attr="score"
+        data-state-increment="1">
+    Click to score
+</button>
+
+<!-- Hover to increment -->
+<div data-state-trigger
+     data-state-trigger-on="mouseenter"
+     data-state-bind="stats"
+     data-state-attr="hovers"
+     data-state-increment="1">
+    Hover over me!
+</div>
+
+<!-- Fire on focus -->
+<input data-state-trigger
+       data-state-trigger-on="focus"
+       data-state-bind="form"
+       data-state-attr="activeField"
+       data-state-set="username">
+
+<!-- Fire on form submission -->
+<form data-state-trigger
+      data-state-trigger-on="submit"
+      data-state-bind="stats"
+      data-state-attr="submits"
+      data-state-increment="1">
+    <!-- Form automatically prevents page reload -->
+    <input type="text" name="username">
+    <button type="submit">Submit</button>
+</form>
+```
+
+### Supported Events
+
+**Mouse Events:**
+- `click` - Default trigger behavior
+- `dblclick` - Double-click
+- `mouseenter` - Mouse enters element
+- `mouseleave` - Mouse leaves element
+- `mouseover` - Mouse moves over element
+- `mouseout` - Mouse moves out of element
+
+**Form Events:**
+- `input` - Text input, range slider changes (fires on every keystroke)
+- `change` - Select dropdowns, checkboxes, radio buttons (fires on blur/commit)
+- `focus` - Element gains focus
+- `blur` - Element loses focus
+- `submit` - Form submission (automatically calls `preventDefault()`)
+
+**Keyboard Events:**
+- `keydown` - Key is pressed down
+- `keyup` - Key is released
+- `keypress` - Key is pressed (deprecated but supported)
+
+**Scroll Events:**
+- `scroll` - Element scrolls (use with throttle!)
+
+**Custom Events:**
+- `intersect` - Element becomes visible (custom event from IntersectionObserver)
+- Any CustomEvent dispatched via JavaScript
+
+### Debounce (Delay After Rapid Events)
+
+Use `data-state-debounce` to delay execution until events stop firing:
+
+```html
+<!-- Search input: only fire 300ms after user stops typing -->
+<input type="text"
+       data-state-trigger
+       data-state-trigger-on="input"
+       data-state-debounce="300"
+       data-state-bind="search"
+       data-state-attr="query"
+       data-state-increment="1">
+
+<!-- Resize handler: only fire 500ms after window stops resizing -->
+<div data-state-trigger
+     data-state-trigger-on="resize"
+     data-state-debounce="500"
+     data-state-bind="layout"
+     data-state-attr="width"
+     data-state-set="calc(100)">
+</div>
+```
+
+**How debounce works:**
+1. Event fires (e.g., user types a character)
+2. Timer starts counting down from specified ms
+3. If another event fires before timer completes, reset the timer
+4. When timer completes without interruption, execute trigger
+5. **Use for:** Text input, resize, autocomplete, validation
+
+### Throttle (Limit Firing Rate)
+
+Use `data-state-throttle` to limit how often a trigger can fire:
+
+```html
+<!-- Scroll tracking: fire at most once per 200ms (5x/second max) -->
+<div data-state-trigger
+     data-state-trigger-on="scroll"
+     data-state-throttle="200"
+     data-state-bind="stats"
+     data-state-attr="scrolls"
+     data-state-increment="1"
+     style="height: 200px; overflow-y: scroll;">
+    <div style="height: 1000px;">Scroll content...</div>
+</div>
+
+<!-- Mouse tracking: limit to 100ms (10x/second max) -->
+<div data-state-trigger
+     data-state-trigger-on="mousemove"
+     data-state-throttle="100"
+     data-state-bind="cursor"
+     data-state-attr="moves"
+     data-state-increment="1">
+    Track mouse movement
+</div>
+```
+
+**How throttle works:**
+1. Event fires and trigger executes immediately
+2. Start cooldown timer for specified ms
+3. Any events during cooldown are ignored
+4. After cooldown completes, next event can fire
+5. **Use for:** Scroll, mousemove, resize, frequent events
+
+**Debounce vs Throttle:**
+- **Debounce:** Wait until activity stops → fires once at the end
+- **Throttle:** Fire regularly during activity → fires multiple times at limited rate
+
+### Visibility Detection
+
+The `intersect` event fires when an element enters the viewport:
+
+```html
+<!-- Track when user scrolls element into view -->
+<div data-state-trigger
+     data-state-trigger-on="intersect"
+     data-state-bind="analytics"
+     data-state-attr="views"
+     data-state-increment="1">
+    Content that tracks visibility
+</div>
+
+<!-- Lazy-load content -->
+<div data-state-trigger
+     data-state-trigger-on="intersect"
+     data-state-bind="lazySection"
+     data-state-attr="loaded"
+     data-state-set="true">
+    <!-- Fires once when scrolled into view -->
+</div>
+```
+
+**How it works:**
+- State.js uses IntersectionObserver to track visibility
+- When element becomes visible for the first time, dispatches `intersect` CustomEvent
+- Trigger fires and can update state, trigger chains, play sounds, etc.
+- **Use for:** Analytics, lazy loading, scroll-triggered animations, achievement tracking
+
+### Form Auto-Submit Prevention
+
+Form `submit` events automatically call `preventDefault()` to prevent page reload:
+
+```html
+<form id="contactForm"
+      data-state
+      data-state-watch="submits"
+      data-submits="0">
+
+    <input type="text" name="email" required>
+
+    <!-- Submit increments counter WITHOUT reloading page -->
+    <button type="submit"
+            data-state-trigger
+            data-state-trigger-on="submit"
+            data-state-bind="contactForm"
+            data-state-attr="submits"
+            data-state-increment="1"
+            data-state-sound="buy"
+            data-state-event="form-submitted">
+        Submit
+    </button>
+</form>
+
+<p>Submissions: <span data-state-display="submits">0</span></p>
+```
+
+**No JavaScript required!** The form won't reload the page - State.js handles it automatically.
+
+### Combining with Conditions
+
+Event triggers respect `data-state-condition` just like click triggers:
+
+```html
+<div id="game"
+     data-state
+     data-state-watch="gold,active"
+     data-state-toggles="active"
+     data-gold="0"
+     data-active="false">
+
+    <!-- Only track hovers when game is active -->
+    <div data-state-trigger
+         data-state-trigger-on="mouseenter"
+         data-state-condition="active == true"
+         data-state-bind="game"
+         data-state-attr="gold"
+         data-state-increment="1">
+        Hover to collect gold (only when active)
+    </div>
+
+    <!-- Only track input when game is active -->
+    <input data-state-trigger
+           data-state-trigger-on="input"
+           data-state-debounce="500"
+           data-state-condition="active == true"
+           data-state-bind="game"
+           data-state-attr="gold"
+           data-state-increment="5">
+</div>
+```
+
+**Result:** Triggers are disabled (get `state-disabled` class) when condition is false, just like click triggers!
+
+### Real-World Examples
+
+#### Live Search Counter
+
+```html
+<div id="search"
+     data-state
+     data-state-watch="queries"
+     data-queries="0">
+
+    <!-- Debounced search: only counts after user stops typing -->
+    <input type="text"
+           placeholder="Search..."
+           data-state-trigger
+           data-state-trigger-on="input"
+           data-state-debounce="500"
+           data-state-bind="search"
+           data-state-attr="queries"
+           data-state-increment="1"
+           data-state-event="search-query">
+
+    <p>Searches performed: <span data-state-display="queries">0</span></p>
+</div>
+```
+
+#### Scroll Progress Tracker
+
+```html
+<div id="article"
+     data-state
+     data-state-watch="scrollEvents"
+     data-scrollEvents="0">
+
+    <div class="content"
+         data-state-trigger
+         data-state-trigger-on="scroll"
+         data-state-throttle="200"
+         data-state-bind="article"
+         data-state-attr="scrollEvents"
+         data-state-increment="1"
+         style="height: 300px; overflow-y: scroll;">
+        <div style="height: 2000px;">Long scrollable content...</div>
+    </div>
+
+    <p>Scroll events: <span data-state-display="scrollEvents">0</span></p>
+</div>
+```
+
+#### Form Field Tracking
+
+```html
+<div id="formTracking"
+     data-state
+     data-state-watch="focusCount,changes"
+     data-focusCount="0"
+     data-changes="0">
+
+    <!-- Track focus -->
+    <input type="text"
+           placeholder="Username"
+           data-state-trigger
+           data-state-trigger-on="focus"
+           data-state-bind="formTracking"
+           data-state-attr="focusCount"
+           data-state-increment="1">
+
+    <!-- Track changes -->
+    <select data-state-trigger
+            data-state-trigger-on="change"
+            data-state-bind="formTracking"
+            data-state-attr="changes"
+            data-state-increment="1">
+        <option>Option 1</option>
+        <option>Option 2</option>
+    </select>
+
+    <p>Fields focused: <span data-state-display="focusCount">0</span></p>
+    <p>Changes made: <span data-state-display="changes">0</span></p>
+</div>
+```
+
+### Use Cases
+
+**Event-based triggers are perfect for:**
+- 📝 Live search/autocomplete (input + debounce)
+- 📊 Analytics tracking (focus, scroll, visibility)
+- 🎯 Hover effects and interactions (mouseenter/leave)
+- 📋 Form validation and submission (submit, change, blur)
+- 📜 Scroll progress indicators (scroll + throttle)
+- 👀 Lazy loading and content reveal (intersect)
+- ⌨️ Keyboard shortcut tracking (keydown/up)
+- 🎮 Interactive games (mousemove, keypress)
+- 📱 Mobile gesture tracking (with Touch.js integration)
+
+### Performance Tips
+
+1. **Always throttle scroll and mousemove events** (100-200ms recommended)
+2. **Debounce text input** for search/autocomplete (300-500ms recommended)
+3. **Use intersect for lazy loading** instead of scroll events
+4. **Combine with conditions** to disable triggers when not needed
+5. **Prefer change over input** for dropdowns/checkboxes (fires less frequently)
+
+### Configuration
+
+| Attribute | Description | Example |
+|-----------|-------------|---------|
+| `data-state-trigger-on="eventName"` | Which DOM event fires the trigger (default: "click") | `data-state-trigger-on="mouseenter"` |
+| `data-state-debounce="ms"` | Delay trigger execution until events stop (in milliseconds) | `data-state-debounce="500"` |
+| `data-state-throttle="ms"` | Limit trigger firing rate (max once per N milliseconds) | `data-state-throttle="200"` |
+
+**Special behaviors:**
+- `submit` events automatically call `event.preventDefault()`
+- `intersect` is a custom event fired by IntersectionObserver
+- `click` is the default if `data-state-trigger-on` is omitted
+- Triggers with `trigger-on="click"` still get `cursor: pointer` style
 
 ---
 

@@ -423,7 +423,7 @@
 
                     <hr id="headerLine" />
 
-                    <h2 id="documentation">Documentation <sup>v1.3.5</sup></h2>
+                    <h2 id="documentation">Documentation <sup>v1.4.0</sup></h2>
                 </div>
             </div>
 
@@ -1176,6 +1176,160 @@
         data-state-sound="coin"&gt;
     Collect Coin
 &lt;/button&gt;</pre>
+                    </div>
+                </div>
+            </div>
+
+            <hr/>
+
+            <div class="container alignCenter background8" style="background: #0a1a2e;">
+                <div class="box boxBG title">
+                    <h2>Extension 5.5: Event-Based Triggers (v1.4.0)</h2>
+                </div>
+                <div class="box boxBG fadeIn demo-interactive" data-state>
+                    <p>Triggers can now fire on ANY DOM event - not just clicks! Includes debounce/throttle for performance.</p>
+
+                    <div id="eventDemo"
+                         data-state
+                         data-state-watch="hovers,inputs,focuses,scrolls"
+                         data-state-var="true"
+                         data-hovers="0" data-hovers-min="0" data-hovers-max="999"
+                         data-inputs="0" data-inputs-min="0" data-inputs-max="999"
+                         data-focuses="0" data-focuses-min="0" data-focuses-max="999"
+                         data-scrolls="0" data-scrolls-min="0" data-scrolls-max="999">
+
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 20px;">
+                            <div style="background: rgba(99,102,241,0.1); padding: 15px; border-radius: 8px; border: 2px solid #6366f1;">
+                                <div style="font-size: 12px; color: #818cf8;">Hovers</div>
+                                <div style="font-size: 24px; color: #fff; font-weight: bold;" data-state-display="hovers">0</div>
+                            </div>
+                            <div style="background: rgba(16,185,129,0.1); padding: 15px; border-radius: 8px; border: 2px solid #10b981;">
+                                <div style="font-size: 12px; color: #34d399;">Inputs</div>
+                                <div style="font-size: 24px; color: #fff; font-weight: bold;" data-state-display="inputs">0</div>
+                            </div>
+                            <div style="background: rgba(251,191,36,0.1); padding: 15px; border-radius: 8px; border: 2px solid #fbbf24;">
+                                <div style="font-size: 12px; color: #fbbf24;">Focuses</div>
+                                <div style="font-size: 24px; color: #fff; font-weight: bold;" data-state-display="focuses">0</div>
+                            </div>
+                            <div style="background: rgba(239,68,68,0.1); padding: 15px; border-radius: 8px; border: 2px solid #ef4444;">
+                                <div style="font-size: 12px; color: #f87171;">Scrolls</div>
+                                <div style="font-size: 24px; color: #fff; font-weight: bold;" data-state-display="scrolls">0</div>
+                            </div>
+                        </div>
+
+                        <!-- Hover trigger -->
+                        <div style="padding: 30px; background: rgba(99,102,241,0.1); border: 2px dashed #6366f1; border-radius: 8px; text-align: center; margin-bottom: 15px; transition: all 0.3s;"
+                             data-state-trigger
+                             data-state-trigger-on="mouseenter"
+                             data-state-bind="eventDemo"
+                             data-state-attr="hovers"
+                             data-state-increment="1">
+                            <strong style="color: #818cf8;">Hover Me!</strong>
+                            <p style="color: #ccc; font-size: 14px; margin-top: 5px;">Fires on <code>mouseenter</code> event</p>
+                        </div>
+
+                        <!-- Input trigger with debounce -->
+                        <input type="text"
+                               placeholder="Type here... (debounced 500ms)"
+                               style="width: 100%; padding: 12px; background: rgba(16,185,129,0.1); border: 2px solid #10b981; color: #fff; border-radius: 8px; font-family: 'Space Mono', monospace; margin-bottom: 15px;"
+                               data-state-trigger
+                               data-state-trigger-on="input"
+                               data-state-debounce="500"
+                               data-state-bind="eventDemo"
+                               data-state-attr="inputs"
+                               data-state-increment="1">
+
+                        <!-- Focus trigger -->
+                        <input type="text"
+                               placeholder="Click to focus (increments on focus)"
+                               style="width: 100%; padding: 12px; background: rgba(251,191,36,0.1); border: 2px solid #fbbf24; color: #fff; border-radius: 8px; font-family: 'Space Mono', monospace; margin-bottom: 15px;"
+                               data-state-trigger
+                               data-state-trigger-on="focus"
+                               data-state-bind="eventDemo"
+                               data-state-attr="focuses"
+                               data-state-increment="1">
+
+                        <!-- Scroll trigger with throttle -->
+                        <div style="height: 120px; overflow-y: scroll; background: rgba(239,68,68,0.1); border: 2px solid #ef4444; border-radius: 8px; padding: 15px; margin-bottom: 15px;"
+                             data-state-trigger
+                             data-state-trigger-on="scroll"
+                             data-state-throttle="200"
+                             data-state-bind="eventDemo"
+                             data-state-attr="scrolls"
+                             data-state-increment="1">
+                            <div style="height: 300px; color: #ccc;">
+                                <strong style="color: #f87171;">Scroll This Area!</strong>
+                                <p style="margin-top: 10px;">Throttled to 200ms - fires at most 5x per second</p>
+                                <p style="margin-top: 50px;">Keep scrolling...</p>
+                                <p style="margin-top: 50px;">Almost there...</p>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 20px; padding: 15px; background: rgba(99,102,241,0.1); border-radius: 8px; border: 2px solid #6366f1;">
+                            <strong style="color: #818cf8;">Supported Events:</strong>
+                            <p style="color: #ccc; margin: 10px 0; font-size: 14px;">
+                                <code>click</code> • <code>mouseenter</code> • <code>mouseleave</code> • <code>focus</code> • <code>blur</code> • <code>input</code> • <code>change</code> • <code>submit</code> • <code>keydown</code> • <code>keyup</code> • <code>scroll</code> • <code>intersect</code> (visibility) • and more!
+                            </p>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 30px; color: #fff;">The Code:</h3>
+                    <div class="code-box">
+                        <pre>&lt;!-- Hover trigger --&gt;
+&lt;div data-state-trigger
+     data-state-trigger-on="mouseenter"
+     data-state-bind="stats"
+     data-state-attr="hovers"
+     data-state-increment="1"&gt;
+    Hover me!
+&lt;/div&gt;
+
+&lt;!-- Debounced input (500ms delay) --&gt;
+&lt;input data-state-trigger
+       data-state-trigger-on="input"
+       data-state-debounce="500"
+       data-state-bind="stats"
+       data-state-attr="searches"
+       data-state-increment="1"&gt;
+
+&lt;!-- Throttled scroll (max 5x/sec) --&gt;
+&lt;div data-state-trigger
+     data-state-trigger-on="scroll"
+     data-state-throttle="200"
+     data-state-bind="stats"
+     data-state-attr="scrolls"
+     data-state-increment="1"&gt;
+    Scroll area
+&lt;/div&gt;
+
+&lt;!-- Form submit with preventDefault --&gt;
+&lt;form data-state-trigger
+      data-state-trigger-on="submit"
+      data-state-bind="stats"
+      data-state-attr="submits"
+      data-state-increment="1"&gt;
+    &lt;!-- Automatically prevents page reload --&gt;
+&lt;/form&gt;
+
+&lt;!-- Visibility detection --&gt;
+&lt;div data-state-trigger
+     data-state-trigger-on="intersect"
+     data-state-bind="stats"
+     data-state-attr="views"
+     data-state-increment="1"&gt;
+    Fires when scrolled into view
+&lt;/div&gt;</pre>
+                    </div>
+
+                    <div style="margin-top: 20px; padding: 15px; background: rgba(16,185,129,0.1); border-radius: 8px; border: 2px solid #10b981;">
+                        <strong style="color: #34d399;">New in v1.4.0:</strong>
+                        <ul style="color: #ccc; margin: 10px 0 10px 20px; line-height: 1.8;">
+                            <li><code>data-state-trigger-on</code> - Listen to any DOM event (default: "click")</li>
+                            <li><code>data-state-debounce</code> - Delay execution until events stop (in ms)</li>
+                            <li><code>data-state-throttle</code> - Limit execution rate (in ms)</li>
+                            <li>Form <code>submit</code> events automatically call preventDefault()</li>
+                            <li>Custom <code>intersect</code> event fires when element enters viewport</li>
+                        </ul>
                     </div>
                 </div>
             </div>

@@ -1,4 +1,4 @@
-/* State.js v1.3.5 by iDev Games */
+/* State.js v1.4.0 by iDev Games */
 class State
 {
     states = [];
@@ -8,6 +8,8 @@ class State
     stateAttributesCache = new Map();
     formElements = new Set();
     mediaElements = new Set();
+    debounceTimers = new Map();
+    throttleTimers = new Map();
 
     constructor() {
         this.stateInit = this.stateInit.bind(this);
@@ -15,6 +17,29 @@ class State
         this.handleFormInput = this.handleFormInput.bind(this);
         this.handleMediaUpdate = this.handleMediaUpdate.bind(this);
         this.observer = new IntersectionObserver(this.stateObserver);
+    }
+
+    debounce(key, callback, delay) {
+        if (this.debounceTimers.has(key)) {
+            clearTimeout(this.debounceTimers.get(key));
+        }
+        const timer = setTimeout(() => {
+            callback();
+            this.debounceTimers.delete(key);
+        }, delay);
+        this.debounceTimers.set(key, timer);
+    }
+
+    throttle(key, callback, delay) {
+        if (this.throttleTimers.has(key)) {
+            return false;
+        }
+        callback();
+        const timer = setTimeout(() => {
+            this.throttleTimers.delete(key);
+        }, delay);
+        this.throttleTimers.set(key, timer);
+        return true;
     }
 
     decodeHTMLEntities(str) {
@@ -234,10 +259,34 @@ class State
             }
         }
 
-        element.addEventListener('click', (e) => {
-            this.handleTriggerClick(element, bindAttr);
-        });
-        element.style.cursor = 'pointer';
+        const triggerOn = element.getAttribute('data-state-trigger-on') || 'click';
+        const debounceMs = parseInt(element.getAttribute('data-state-debounce')) || 0;
+        const throttleMs = parseInt(element.getAttribute('data-state-throttle')) || 0;
+
+        const eventHandler = (e) => {
+            if (triggerOn === 'submit') {
+                e.preventDefault();
+            }
+
+            const executeHandler = () => {
+                this.handleTriggerClick(element, bindAttr);
+            };
+
+            if (debounceMs > 0) {
+                this.debounce(`trigger-${element.id || element.getAttribute('data-state-bind')}-${triggerOn}`, executeHandler, debounceMs);
+            } else if (throttleMs > 0) {
+                this.throttle(`trigger-${element.id || element.getAttribute('data-state-bind')}-${triggerOn}`, executeHandler, throttleMs);
+            } else {
+                executeHandler();
+            }
+        };
+
+        element.addEventListener(triggerOn, eventHandler);
+
+        if (triggerOn === 'click') {
+            element.style.cursor = 'pointer';
+        }
+
         if (condition && bindAttr) {
             this.updateTriggerCondition(element, bindAttr, condition);
         }
@@ -490,6 +539,10 @@ class State
             if (entry.isIntersecting) {
                 if (!entry.target.classList.contains('state')) {
                     entry.target.classList.add('state', 'state-visible');
+                    const intersectEvent = new CustomEvent('intersect', {
+                        detail: { entry: entry }
+                    });
+                    entry.target.dispatchEvent(intersectEvent);
                 }
             } else {
                 entry.target.classList.remove('state', 'state-visible');
@@ -705,9 +758,8 @@ class State
             return;
         }
 
-        // Evaluate initial condition state
         const condition = element.getAttribute('data-state-condition');
-        let initialConditionState = true; // default if no condition
+        let initialConditionState = true;
         if (condition) {
             let bindAttr = element.getAttribute('data-state-bind');
             if (!bindAttr) {
@@ -755,16 +807,13 @@ class State
                         }
                     }
 
-                    // Track condition state transitions
                     const conditionChanged = shouldFire !== data.lastConditionState;
                     data.lastConditionState = shouldFire;
 
-                    // Reset timer when condition becomes true
                     if (condition && shouldFire && conditionChanged) {
                         data.lastFire = now;
                     }
 
-                    // Fire if condition is met AND interval has elapsed
                     if (shouldFire && (now - data.lastFire >= data.interval)) {
                         el.click();
                         data.lastFire = now;
