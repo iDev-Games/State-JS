@@ -5,6 +5,9 @@
 **State.js** is a lightweight CSS frontend framework that exposes DOM element states as CSS variables for data-driven animations and reactive UIs. Build dynamic, interactive interfaces using pure CSS and HTML.
 
 [![License](https://img.shields.io/badge/License-MIT-blue)](#license)
+![npm bundle size](https://img.shields.io/bundlephobia/min/%40idevgames%2Fstate-js)
+![npm](https://img.shields.io/npm/dy/%40idevgames%2Fstate-js?logo=NPM)
+![jsDelivr hits (npm)](https://img.shields.io/jsdelivr/npm/hm/%40idevgames%2Fstate-js)
 [![GitHub tag](https://img.shields.io/github/tag/iDev-Games/State-JS?include_prereleases=&sort=semver&color=blue)](https://github.com/iDev-Games/State-JS/releases/)
 
 ---
@@ -1002,6 +1005,47 @@ All State.js features (triggers, persistence, intervals, sounds, etc.) work perf
 - Production apps with proper HTTP caching
 
 **Local Development:** File-based includes require HTTP/HTTPS (browser security prevents `file://` fetching). Run any simple local server - Python's `python -m http.server`, Node's `npx http-server`, or VS Code Live Server. Template-based includes work anywhere, including `file://`!
+
+### Security Considerations
+
+⚠️ **Important**: For security, external file fetches are **disabled by default** in State.js v1.4.2+.
+
+**Template-based includes are always safe** and require no configuration:
+```html
+<div data-state-include="#my-template"></div> <!-- ✅ Always works -->
+```
+
+**To enable external file fetches**:
+```javascript
+// Only enable if you trust the source AND use HTTPS
+state.allowExternalIncludes = true;
+```
+
+**Security Best Practices**:
+
+1. **Prefer templates over external files** when possible
+2. **Use HTTPS only** - never fetch over HTTP
+3. **Same-origin policy** - fetch from your own domain
+4. **Content Security Policy** - add CSP headers to your server
+5. **DOMPurify (optional)** - for extra protection with external content:
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
+<script src="state.js"></script>
+<script>
+  // DOMPurify auto-detected and used if available
+  state.allowExternalIncludes = true;
+</script>
+```
+
+**Attack Vectors to Avoid**:
+- ❌ User-controlled URLs: `data-state-include="${userInput}"`
+- ❌ HTTP endpoints: `data-state-include="http://..."`
+- ❌ Untrusted CDNs: `data-state-include="https://random-cdn.com/..."`
+- ❌ Third-party domains without CORS/CSP protection
+
+**Why Template-Based Includes Are Secure**:
+Templates (`#id`) are already in your HTML - if they're malicious, your page is already compromised. The security boundary is your deployment pipeline, not runtime injection.
 
 ---
 

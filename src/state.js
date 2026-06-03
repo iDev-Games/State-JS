@@ -1,4 +1,4 @@
-/* State.js v1.4.1 by iDev Games */
+/* State.js v1.4.2 by iDev Games */
 class State
 {
     states = [];
@@ -1303,12 +1303,20 @@ class State
     }
 
     includeCache = new Map();
+    allowExternalIncludes = false;
 
     setupInclude(element) {
         const src = element.getAttribute('data-state-include');
         if (!src) return;
 
         const loadAndInject = (html) => {
+            if (typeof DOMPurify !== 'undefined') {
+                html = DOMPurify.sanitize(html, {
+                    RETURN_DOM_FRAGMENT: false,
+                    RETURN_DOM: false
+                });
+            }
+
             const temp = document.createElement('div');
             temp.innerHTML = html.trim();
             const imported = temp.firstElementChild;
@@ -1349,6 +1357,16 @@ class State
             } else {
                 loadAndInject(template.innerHTML);
             }
+            return;
+        }
+
+        if (!this.allowExternalIncludes) {
+            console.error(
+                'State.js Security Warning: External includes disabled by default.\n' +
+                'Use template-based includes (#id) or enable with:\n' +
+                '  state.allowExternalIncludes = true;\n' +
+                'Only enable for trusted HTTPS sources. See: https://github.com/iDev-Games/State-JS#security'
+            );
             return;
         }
 
