@@ -11,28 +11,6 @@ We release security updates for the following versions of State.js:
 | 1.2.x   | :x:                |
 | < 1.2   | :x:                |
 
-## Reporting a Vulnerability
-
-We take the security of State.js seriously. If you discover a security vulnerability, please follow these steps:
-
-### How to Report
-
-1. **DO NOT** open a public GitHub issue for security vulnerabilities
-2. Email security details to: admin@idev.games
-3. Include the following information:
-   - Description of the vulnerability
-   - Steps to reproduce
-   - Potential impact
-   - Suggested fix (if any)
-
-### What to Expect
-
-- **Acknowledgment**: We will acknowledge receipt within 48 hours
-- **Assessment**: We will assess the vulnerability within 7 days
-- **Updates**: We will keep you informed of progress
-- **Fix Timeline**: Critical vulnerabilities will be patched within 14 days
-- **Credit**: You will be credited in the release notes (if desired)
-
 ## Security Best Practices
 
 ### HTML Includes
