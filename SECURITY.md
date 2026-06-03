@@ -18,7 +18,7 @@ We take the security of State.js seriously. If you discover a security vulnerabi
 ### How to Report
 
 1. **DO NOT** open a public GitHub issue for security vulnerabilities
-2. Email security details to: [Your security email here]
+2. Email security details to: admin@idev.games
 3. Include the following information:
    - Description of the vulnerability
    - Steps to reproduce
