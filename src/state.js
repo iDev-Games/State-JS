@@ -1317,9 +1317,9 @@ class State
                 });
             }
 
-            const temp = document.createElement('div');
-            temp.innerHTML = html.trim();
-            const imported = temp.firstElementChild;
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html.trim(), 'text/html');
+            const imported = doc.body.firstElementChild;
 
             if (!imported) {
                 console.warn('State.js: Invalid include content:', src);
