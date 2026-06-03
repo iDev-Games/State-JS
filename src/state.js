@@ -1,4 +1,4 @@
-/* State.js v1.4.0 by iDev Games */
+/* State.js v1.4.1 by iDev Games */
 class State
 {
     states = [];
@@ -78,23 +78,222 @@ class State
 
     evaluateCondition(conditionStr, sourceElement) {
         try {
-            const decoded = this.decodeHTMLEntities(conditionStr);
-            const processed = decoded.replace(/([a-zA-Z][\w-]*)/g, (match) => {
-                const keywords = ['true', 'false', 'null', 'undefined', 'and', 'or', 'not'];
-                if (keywords.includes(match.toLowerCase())) {
-                    return match;
-                }
-                const value = sourceElement.getAttribute(`data-${match}`);
-                return value !== null ? value : match;
-            });
-            const normalized = processed
-                .replace(/\band\b/gi, '&&')
-                .replace(/\bor\b/gi, '||');
-            return Function('"use strict"; return (' + normalized + ')')();
+            return Boolean(this._parseExpression(conditionStr, sourceElement));
         } catch (e) {
             console.warn('State.js: Invalid condition expression:', conditionStr, e);
             return false;
         }
+    }
+
+    _parseExpression(conditionStr, sourceElement) {
+        const decoded = this.decodeHTMLEntities(conditionStr);
+
+        const tokenizer = (str) => {
+            const tokens = [];
+            let i = 0;
+            while (i < str.length) {
+                if (/\s/.test(str[i])) { i++; continue; }
+                if (str[i] === '(') { tokens.push({ type: 'LPAREN' }); i++; continue; }
+                if (str[i] === ')') { tokens.push({ type: 'RPAREN' }); i++; continue; }
+                if (str.slice(i, i + 2) === '&&') { tokens.push({ type: 'AND' }); i += 2; continue; }
+                if (str.slice(i, i + 2) === '||') { tokens.push({ type: 'OR' });  i += 2; continue; }
+                if (str.slice(i, i + 2) === '==') { tokens.push({ type: 'EQ' });  i += 2; continue; }
+                if (str.slice(i, i + 2) === '!=') { tokens.push({ type: 'NEQ' }); i += 2; continue; }
+                if (str.slice(i, i + 2) === '<=') { tokens.push({ type: 'LTE' }); i += 2; continue; }
+                if (str.slice(i, i + 2) === '>=') { tokens.push({ type: 'GTE' }); i += 2; continue; }
+                if (str[i] === '<') { tokens.push({ type: 'LT' }); i++; continue; }
+                if (str[i] === '>') { tokens.push({ type: 'GT' }); i++; continue; }
+                if (str[i] === '!') { tokens.push({ type: 'NOT' }); i++; continue; }
+                if (str[i] === '+') { tokens.push({ type: 'ADD' }); i++; continue; }
+                if (str[i] === '-') { tokens.push({ type: 'SUB' }); i++; continue; }
+                if (str[i] === '*') { tokens.push({ type: 'MUL' }); i++; continue; }
+                if (str[i] === '/') { tokens.push({ type: 'DIV' }); i++; continue; }
+                if (str[i] === '?') { tokens.push({ type: 'QUESTION' }); i++; continue; }
+                if (str[i] === ':') { tokens.push({ type: 'COLON' });    i++; continue; }
+
+                if (str[i] === '"' || str[i] === "'") {
+                    const q = str[i++], start = i;
+                    while (i < str.length && str[i] !== q) i++;
+                    const sVal = str.slice(start, i++);
+                    tokens.push({ type: 'STRING', value: sVal });
+                    continue;
+                }
+                if (/[\d.]/.test(str[i])) {
+                    const start = i;
+                    while (i < str.length && /[\d.]/.test(str[i])) i++;
+                    const numStr = str.slice(start, i);
+                    tokens.push({ type: 'NUMBER', value: parseFloat(numStr) });
+                    continue;
+                }
+
+                if (/[a-zA-Z_]/.test(str[i])) {
+                    const start = i;
+                    while (i < str.length && /[a-zA-Z0-9_-]/.test(str[i])) i++;
+                    const word = str.slice(start, i);
+                    const lower = word.toLowerCase();
+                    if (lower === 'and')       tokens.push({ type: 'AND' });
+                    else if (lower === 'or')   tokens.push({ type: 'OR' });
+                    else if (lower === 'not')  tokens.push({ type: 'NOT' });
+                    else if (lower === 'true') tokens.push({ type: 'BOOL', value: true });
+                    else if (lower === 'false') tokens.push({ type: 'BOOL', value: false });
+                    else if (lower === 'null') tokens.push({ type: 'NULL' });
+                    else tokens.push({ type: 'IDENT', value: word });
+                    continue;
+                }
+                i++;
+            }
+            return tokens;
+        };
+
+        const tokens = tokenizer(decoded);
+        let pos = 0;
+        const peek  = () => tokens[pos];
+        const consume = () => tokens[pos++];
+
+        const resolveIdent = (name) => {
+            const val = sourceElement.getAttribute(`data-${name}`);
+            if (val === null) return name;
+            if (val === 'true')  return true;
+            if (val === 'false') return false;
+            if (val === 'null')  return null;
+            const num = Number(val);
+            return isNaN(num) ? val : num;
+        };
+
+        function parseExpr() { return parseTernary(); }
+
+        function parseTernary() {
+            const leftFn = parseOr();
+            if (peek()?.type === 'QUESTION') {
+                consume(); 
+                const trueBranchFn = parseTernary(); 
+                if (peek()?.type === 'COLON') consume(); 
+                const falseBranchFn = parseTernary();
+                return () => leftFn() ? trueBranchFn() : falseBranchFn();
+            }
+            return leftFn;
+        }
+
+        function parseOr() {
+            let leftFn = parseAnd();
+            while (peek()?.type === 'OR') {
+                consume();
+                const rightFn = parseAnd();
+                const currentLeft = leftFn;
+                leftFn = () => currentLeft() || rightFn();
+            }
+            return leftFn;
+        }
+
+        function parseAnd() {
+            let leftFn = parseNot();
+            while (peek()?.type === 'AND') {
+                consume();
+                const rightFn = parseNot();
+                const currentLeft = leftFn;
+                leftFn = () => currentLeft() && rightFn();
+            }
+            return leftFn;
+        }
+
+        function parseNot() {
+            if (peek()?.type === 'NOT') {
+                consume();
+                const subFn = parseNot();
+                return () => !subFn();
+            }
+            return parseEquality();
+        }
+
+        function parseEquality() {
+            let leftFn = parseRelational();
+            while (true) {
+                const type = peek()?.type;
+                if (type === 'EQ' || type === 'NEQ') {
+                    consume();
+                    const rightFn = parseRelational();
+                    const currentLeft = leftFn;
+                    leftFn = type === 'EQ' 
+                        ? () => currentLeft() == rightFn() 
+                        : () => currentLeft() != rightFn();
+                } else break;
+            }
+            return leftFn;
+        }
+
+        function parseRelational() {
+            let leftFn = parseAddSub();
+            while (true) {
+                const type = peek()?.type;
+                if (type === 'LT' || type === 'GT' || type === 'LTE' || type === 'GTE') {
+                    consume();
+                    const rightFn = parseAddSub();
+                    const currentLeft = leftFn;
+                    if (type === 'LT')  leftFn = () => currentLeft() < rightFn();
+                    if (type === 'GT')  leftFn = () => currentLeft() > rightFn();
+                    if (type === 'LTE') leftFn = () => currentLeft() <= rightFn();
+                    if (type === 'GTE') leftFn = () => currentLeft() >= rightFn();
+                } else break;
+            }
+            return leftFn;
+        }
+
+        function parseAddSub() {
+            let leftFn = parseMulDiv();
+            while (true) {
+                const type = peek()?.type;
+                if (type === 'ADD' || type === 'SUB') {
+                    consume();
+                    const rightFn = parseMulDiv();
+                    const currentLeft = leftFn;
+                    leftFn = type === 'ADD' 
+                        ? () => currentLeft() + rightFn() 
+                        : () => currentLeft() - rightFn();
+                } else break;
+            }
+            return leftFn;
+        }
+
+        function parseMulDiv() {
+            let leftFn = parsePrimary();
+            while (true) {
+                const type = peek()?.type;
+                if (type === 'MUL' || type === 'DIV') {
+                    consume();
+                    const rightFn = parsePrimary();
+                    const currentLeft = leftFn;
+                    leftFn = type === 'MUL' 
+                        ? () => currentLeft() * rightFn() 
+                        : () => currentLeft() / rightFn();
+                } else break;
+            }
+            return leftFn;
+        }
+
+        function parsePrimary() {
+            const t = peek();
+            if (!t) return () => false;
+            if (t.type === 'LPAREN') {
+                consume();
+                const innerExprFn = parseExpr();
+                if (peek()?.type === 'RPAREN') consume();
+                return innerExprFn;
+            }
+            if (t.type === 'SUB') {
+                consume();
+                const inner = parsePrimary();
+                return () => -inner();
+            }
+            if (t.type === 'BOOL')   { consume(); return () => t.value; }
+            if (t.type === 'NULL')   { consume(); return () => null; }
+            if (t.type === 'NUMBER') { consume(); return () => t.value; }
+            if (t.type === 'STRING') { consume(); return () => t.value; }
+            if (t.type === 'IDENT')  { consume(); return () => resolveIdent(t.value); }
+            consume();
+            return () => false;
+        }
+        const compiledBlueprint = parseExpr();
+        return compiledBlueprint();
     }
 
     stateInit() {
@@ -991,21 +1190,7 @@ class State
 
     evaluateExpression(expr, sourceElement) {
         try {
-            const decoded = this.decodeHTMLEntities(expr);
-            const processed = decoded.replace(/([a-zA-Z][\w-]*)/g, (match) => {
-                const keywords = ['true', 'false', 'null', 'undefined'];
-                if (keywords.includes(match.toLowerCase())) {
-                    return match;
-                }
-                const value = sourceElement.getAttribute(`data-${match}`);
-                if (value !== null) {
-                    const numValue = parseFloat(value);
-                    return isNaN(numValue) ? `"${value}"` : numValue;
-                }
-                return match;
-            });
-
-            return Function('"use strict"; return (' + processed + ')')();
+            return this._parseExpression(expr, sourceElement);
         } catch (e) {
             console.warn('State.js: Invalid expression:', expr, e);
             return 0;
