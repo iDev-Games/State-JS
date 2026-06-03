@@ -1,16 +1,5 @@
 # Security Policy
 
-## Supported Versions
-
-We release security updates for the following versions of State.js:
-
-| Version | Supported          |
-| ------- | ------------------ |
-| 1.4.x   | :white_check_mark: |
-| 1.3.x   | :x:                |
-| 1.2.x   | :x:                |
-| < 1.2   | :x:                |
-
 ## Security Best Practices
 
 ### HTML Includes
@@ -119,15 +108,3 @@ State.js will automatically use DOMPurify if it's available in the global scope.
 - ⚠️ External includes were enabled by default (XSS risk)
 - ⚠️ Used `eval()` for expressions (CSP violations)
 - 🚨 **Upgrade recommended**
-
-## Responsible Disclosure
-
-We follow responsible disclosure practices:
-
-1. We will work with you to understand and validate the vulnerability
-2. We will develop and test a fix
-3. We will release a security patch
-4. We will publicly disclose the vulnerability after the patch is released
-5. We will credit you in the release notes (if you wish)
-
-Thank you for helping keep State.js secure!
