@@ -36,7 +36,7 @@
                 overflow:hidden;
             }
             .state.background1:after{
-                content:"";
+                /*content:"";*/
                 width:100%;
                 height:100%;
                 position:absolute;
@@ -423,7 +423,7 @@
 
                     <hr id="headerLine" />
 
-                    <h2 id="documentation">Documentation <sup>v1.4.1</sup></h2>
+                    <h2 id="documentation">Documentation <sup>v1.5.0</sup></h2>
                 </div>
             </div>
 
@@ -1625,6 +1625,130 @@ State.inspect('#compute-demo')
 // Trace HP changes
 State.trace('hp', true)</pre>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <hr/>
+
+            <div class="container alignCenter background1" data-state data-state-var="true">
+                <div class="box boxBG title">
+                    <h2>Extension 5.6: Instance Management (v1.5.0)</h2>
+                </div>
+                <div class="box boxBG fadeIn" data-state>
+                    <p>
+                        <strong style="color: #34d399;">New in v1.5.0:</strong>
+                        Dynamically instantiate and remove elements for game development - perfect for spawning enemies, creating projectiles, managing inventory items, and building dynamic UI.
+                    </p>
+
+                    <h3 style="margin-top: 30px; color: #fff;">Live Demo: Enemy Spawner</h3>
+
+                    <div id="game-container" style="min-height: 300px; padding: 20px; background: rgba(0,0,0,0.3); border-radius: 8px; margin: 20px 0;">
+                        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                            <button data-state-trigger
+                                    data-state-instantiate="enemy-clone-template"
+                                    data-state-target="#enemy-zone"
+                                    data-state-insert="append"
+                                    data-state-set-health="100"
+                                    data-state-set-type="goblin"
+                                    data-state-set-class="enemy"
+                                    style="padding: 10px 20px; background: #ff6b6b; border: none; border-radius: 4px; color: white; cursor: pointer;">
+                                Spawn Goblin (100 HP)
+                            </button>
+                            <button data-state-trigger
+                                    data-state-instantiate="enemy-clone-template"
+                                    data-state-target="#enemy-zone"
+                                    data-state-insert="append"
+                                    data-state-set-health="200"
+                                    data-state-set-type="orc"
+                                    data-state-set-class="enemy"
+                                    style="padding: 10px 20px; background: #8a2be2; border: none; border-radius: 4px; color: white; cursor: pointer;">
+                                Spawn Orc (200 HP)
+                            </button>
+                            <button data-state-trigger
+                                    data-state-remove=".enemy"
+                                    style="padding: 10px 20px; background: #51cf66; border: none; border-radius: 4px; color: white; cursor: pointer;">
+                                Clear All Enemies
+                            </button>
+                        </div>
+
+                        <div id="enemy-zone" style="display: flex; flex-wrap: wrap; gap: 15px; min-height: 150px;">
+                        </div>
+
+                    </div>
+
+                    <div id="enemy-clone-template" data-state data-state-watch="health,type" data-health="100" data-type="enemy" style="display: none; padding: 15px; background: rgba(255,107,107,0.2); border: 2px solid #ff6b6b; border-radius: 8px; width: 150px;">
+                        <div style="color: #fff; font-weight: bold; margin-bottom: 10px;">
+                            <span data-state-display="type">Enemy</span>
+                        </div>
+                        <div style="color: #ccc; margin-bottom: 10px;">
+                            HP: <span data-state-display="health" style="color: #ff6b6b;">100</span>
+                        </div>
+                        <button data-state-trigger
+                                data-state-attr="health"
+                                data-state-increment="-25"
+                                style="width: 100%; padding: 8px; background: #ff6b6b; border: none; border-radius: 4px; color: white; cursor: pointer;">
+                            Attack (-25 HP)
+                        </button>
+                    </div>
+
+                    <h3 style="margin-top: 30px; color: #fff;">Code Example:</h3>
+                    <div class="code-box">
+                        <pre>&lt;!-- Instantiate --&gt;
+&lt;button data-state-trigger
+        data-state-instantiate="enemy-template"
+        data-state-target="#game"
+        data-state-insert="append"
+        data-state-set-health="100"
+        data-state-set-type="goblin"&gt;
+  Spawn Enemy
+&lt;/button&gt;
+
+&lt;!-- Remove by ID --&gt;
+&lt;button data-state-trigger
+        data-state-remove="enemy-template-1"&gt;
+  Remove Enemy #1
+&lt;/button&gt;
+
+&lt;!-- Remove all matching selector --&gt;
+&lt;button data-state-trigger
+        data-state-remove=".enemy"&gt;
+  Clear All Enemies
+&lt;/button&gt;
+
+&lt;!-- Conditional removal --&gt;
+&lt;button data-state-trigger
+        data-state-remove=".enemy"
+        data-state-condition="health &lt;= 0"&gt;
+  Remove Dead Enemies
+&lt;/button&gt;
+
+&lt;!-- Template element (hidden) --&gt;
+&lt;div id="enemy-template" class="enemy" data-state&gt;
+  &lt;!-- Your enemy content --&gt;
+&lt;/div&gt;</pre>
+                    </div>
+
+                    <div style="margin-top: 30px; padding: 20px; background: rgba(138,43,226,0.1); border-radius: 8px; border: 2px solid #8a2be2;">
+                        <h4 style="color: #da70d6; margin-bottom: 15px;">Key Features:</h4>
+                        <ul style="color: #ccc; margin-left: 20px; line-height: 1.8;">
+                            <li><strong>Auto-Generated IDs:</strong> Cloned elements get unique IDs like <code>enemy-1</code>, <code>enemy-2</code></li>
+                            <li><strong>Instance Counting:</strong> Source element gets <code>data-{sourceId}Count</code> attribute</li>
+                            <li><strong>Attribute Overrides:</strong> Use <code>data-state-set-*</code> to customize cloned instances</li>
+                            <li><strong>Insert Modes:</strong> append, prepend, before, after</li>
+                            <li><strong>Remove by ID:</strong> Remove single element by ID</li>
+                            <li><strong>Remove by Selector:</strong> Remove all matching elements (class, attribute, etc.)</li>
+                            <li><strong>Conditional Removal:</strong> Only remove elements that match a condition</li>
+                            <li><strong>Auto-Initialization:</strong> Cloned elements automatically have State.js activated</li>
+                        </ul>
+                    </div>
+
+                    <div style="margin-top: 30px; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                        <strong style="color: #da70d6;">Use Cases:</strong>
+                        <p style="color: #ccc; margin: 10px 0;">
+                            Perfect for spawning enemies, creating projectiles, managing inventory items, building card collections,
+                            dynamic form fields, notification systems, and any scenario where you need to create and destroy DOM elements dynamically!
+                        </p>
                     </div>
                 </div>
             </div>

@@ -881,6 +881,12 @@ When using `data-state-watch="health,score,level"`:
 | `data-state-trigger-on="eventName"` | Fire trigger on DOM event (default: "click") | `data-state-trigger-on="mouseenter"` or `"input"` or `"focus"` |
 | `data-state-debounce="ms"` | Delay trigger execution until events stop (in milliseconds) | `data-state-debounce="500"` |
 | `data-state-throttle="ms"` | Limit trigger firing rate (max once per N ms) | `data-state-throttle="200"` |
+| **NEW v1.5.0** | **Instance Management** | |
+| `data-state-instantiate="id"` | Clone element by ID and insert into DOM | `data-state-instantiate="enemy-template"` |
+| `data-state-remove="selector"` | Remove element(s) by ID or CSS selector | `data-state-remove=".enemy"` |
+| `data-state-target="selector"` | Where to insert cloned element (default: body) | `data-state-target="#game"` |
+| `data-state-insert="mode"` | Insert mode: append, prepend, before, after | `data-state-insert="prepend"` |
+| `data-state-set-*="value"` | Override attribute on cloned element | `data-state-set-health="100"` |
 
 ### Per-State Configuration
 
@@ -1588,6 +1594,276 @@ Event triggers respect `data-state-condition` just like click triggers:
 - `intersect` is a custom event fired by IntersectionObserver
 - `click` is the default if `data-state-trigger-on` is omitted
 - Triggers with `trigger-on="click"` still get `cursor: pointer` style
+
+---
+
+## New in v1.5.0: Instance Management
+
+Dynamically create and remove DOM elements using declarative triggers - perfect for spawning enemies, creating projectiles, managing inventory items, and building dynamic UI systems.
+
+### Basic Instantiation
+
+Clone any element by ID and insert it into the DOM:
+
+```html
+<!-- Spawn button -->
+<button data-state-trigger
+        data-state-instantiate="enemy-template"
+        data-state-target="#game"
+        data-state-insert="append">
+  Spawn Enemy
+</button>
+
+<!-- Template element (hidden) -->
+<div id="enemy-template" class="enemy" data-state>
+  <!-- Your enemy content -->
+</div>
+```
+
+**What happens:**
+1. Clones `#enemy-template` element
+2. Generates unique ID: `enemy-template-1`, `enemy-template-2`, etc.
+3. Inserts into `#game` container
+4. Automatically initializes State.js on the clone
+5. Updates instance count on source element
+
+### Attribute Overrides
+
+Customize each cloned instance with different attributes:
+
+```html
+<button data-state-trigger
+        data-state-instantiate="enemy-template"
+        data-state-target="#game"
+        data-state-set-health="100"
+        data-state-set-type="goblin"
+        data-state-set-level="5">
+  Spawn Goblin (Lvl 5, 100 HP)
+</button>
+
+<button data-state-trigger
+        data-state-instantiate="enemy-template"
+        data-state-target="#game"
+        data-state-set-health="200"
+        data-state-set-type="orc"
+        data-state-set-level="10">
+  Spawn Orc (Lvl 10, 200 HP)
+</button>
+```
+
+**How attribute overrides work:**
+- Use `data-state-set-*` to set attributes on cloned instances
+- Most attributes become `data-*` (e.g., `data-state-set-health="100"` → `data-health="100"`)
+- **Special case:** `data-state-set-class="enemy"` sets the actual `class` attribute (not `data-class`)
+
+**Common use cases:**
+```html
+<!-- Set data attributes -->
+<button data-state-instantiate="item"
+        data-state-set-name="Sword"
+        data-state-set-damage="50">
+  <!-- Creates: data-name="Sword" data-damage="50" -->
+</button>
+
+<!-- Set CSS class for styling/removal -->
+<button data-state-instantiate="enemy"
+        data-state-set-class="monster goblin">
+  <!-- Creates: class="monster goblin" -->
+</button>
+
+<!-- Combine both -->
+<button data-state-instantiate="card"
+        data-state-set-class="playing-card"
+        data-state-set-suit="hearts"
+        data-state-set-rank="ace">
+  <!-- Creates: class="playing-card" data-suit="hearts" data-rank="ace" -->
+</button>
+```
+
+### Insert Modes
+
+Control where the cloned element is inserted:
+
+```html
+<!-- Append to end (default) -->
+<button data-state-instantiate="item"
+        data-state-target="#inventory"
+        data-state-insert="append">Add Item (End)</button>
+
+<!-- Prepend to beginning -->
+<button data-state-instantiate="item"
+        data-state-target="#inventory"
+        data-state-insert="prepend">Add Item (Start)</button>
+
+<!-- Insert before target -->
+<button data-state-instantiate="notification"
+        data-state-target="#top-bar"
+        data-state-insert="before">Add Before</button>
+
+<!-- Insert after target -->
+<button data-state-instantiate="notification"
+        data-state-target="#top-bar"
+        data-state-insert="after">Add After</button>
+```
+
+### Instance Counting
+
+Source elements automatically track how many instances have been created:
+
+```html
+<div id="enemy-template" data-state data-state-watch="enemy-templateCount">
+  <!-- Template content -->
+</div>
+
+<p>Enemies spawned: <span data-state-display="enemy-templateCount">0</span></p>
+```
+
+**Automatic counter attribute:** `data-{sourceId}Count` is updated on the source element each time an instance is created.
+
+### Removing Elements
+
+Remove elements by ID or CSS selector:
+
+```html
+<!-- Remove by ID (single element) -->
+<button data-state-trigger
+        data-state-remove="enemy-template-1">
+  Remove Enemy #1
+</button>
+
+<!-- Remove all matching selector -->
+<button data-state-trigger
+        data-state-remove=".enemy">
+  Clear All Enemies
+</button>
+
+<!-- Remove by attribute -->
+<button data-state-trigger
+        data-state-remove="[data-type='goblin']">
+  Remove All Goblins
+</button>
+```
+
+**How it works:**
+- **ID removal** (no `.` or `[`): Removes single element by ID
+- **Selector removal** (starts with `.` or contains `[`): Removes all matching elements
+
+### Conditional Removal
+
+Only remove elements that meet specific conditions:
+
+```html
+<!-- Remove enemies with 0 HP -->
+<button data-state-trigger
+        data-state-remove=".enemy"
+        data-state-condition="health <= 0">
+  Remove Dead Enemies
+</button>
+
+<!-- Remove low-value items -->
+<button data-state-trigger
+        data-state-remove=".item"
+        data-state-condition="value < 10">
+  Sell Junk Items
+</button>
+```
+
+### Complete Example: Enemy Spawner
+
+```html
+<div id="game">
+  <!-- Spawn controls -->
+  <button data-state-trigger
+          data-state-instantiate="enemy"
+          data-state-target="#battlefield"
+          data-state-set-health="100"
+          data-state-set-type="goblin">
+    Spawn Goblin
+  </button>
+
+  <button data-state-trigger
+          data-state-instantiate="enemy"
+          data-state-target="#battlefield"
+          data-state-set-health="200"
+          data-state-set-type="orc">
+    Spawn Orc
+  </button>
+
+  <!-- Cleanup controls -->
+  <button data-state-trigger
+          data-state-remove=".enemy"
+          data-state-condition="health <= 0">
+    Remove Dead
+  </button>
+
+  <button data-state-trigger
+          data-state-remove=".enemy">
+    Clear All
+  </button>
+
+  <!-- Instance counter -->
+  <p>Total spawned: <span data-state-display="enemyCount">0</span></p>
+
+  <!-- Battlefield container -->
+  <div id="battlefield"></div>
+</div>
+
+<!-- Hidden template -->
+<div id="enemy" class="enemy"
+     data-state
+     data-state-watch="health,type,enemyCount"
+     data-health="100"
+     data-type="enemy"
+     style="display: none;">
+
+  <h3><span data-state-display="type">Enemy</span></h3>
+  <p>HP: <span data-state-display="health">100</span></p>
+
+  <button data-state-trigger
+          data-state-attr="health"
+          data-state-increment="-25">
+    Attack (-25 HP)
+  </button>
+</div>
+```
+
+### Use Cases
+
+**Perfect for:**
+- 🎮 **Game Development:** Spawn enemies, projectiles, particles, loot drops
+- 📦 **Inventory Systems:** Add/remove items, manage equipment slots
+- 🃏 **Card Games:** Deal cards, shuffle decks, create hands
+- 📝 **Dynamic Forms:** Add/remove form fields, repeating sections
+- 🔔 **Notifications:** Create toast messages, alerts, popups
+- 📊 **Data Visualization:** Generate chart elements, data points
+- 🛒 **Shopping Carts:** Add/remove products, update quantities
+- 💬 **Chat Systems:** Add messages, manage conversation threads
+
+### Security
+
+Instance management uses `DOMParser` for secure element cloning (same as v1.4.2 HTML includes):
+
+- ✅ No `innerHTML` usage
+- ✅ Safe from XSS attacks
+- ✅ CSP compliant
+- ✅ Zero external dependencies
+
+### Configuration
+
+| Attribute | Description | Example |
+|-----------|-------------|---------|
+| `data-state-instantiate="id"` | ID of element to clone | `data-state-instantiate="enemy"` |
+| `data-state-remove="selector"` | ID or CSS selector of element(s) to remove | `data-state-remove=".enemy"` |
+| `data-state-target="selector"` | Where to insert cloned element (default: body) | `data-state-target="#game"` |
+| `data-state-insert="mode"` | Insert mode: append, prepend, before, after (default: append) | `data-state-insert="prepend"` |
+| `data-state-set-*="value"` | Override attribute on cloned element (becomes `data-*`) | `data-state-set-health="100"` → `data-health="100"` |
+| `data-state-set-class="value"` | Special: Sets actual `class` attribute (not `data-class`) | `data-state-set-class="enemy"` → `class="enemy"` |
+| `data-state-condition="expr"` | Condition for removal (only with remove) | `data-state-condition="health <= 0"` |
+
+**Auto-generated:**
+- Unique IDs: `{sourceId}-{counter}` (e.g., `enemy-1`, `enemy-2`)
+- Instance count: `data-{sourceId}Count` on source element
+- Clones automatically have `display: none` removed if present on template
 
 ---
 

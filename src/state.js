@@ -1,4 +1,4 @@
-/* State.js v1.4.2 by iDev Games */
+/* State.js v1.5.0 by iDev Games */
 class State
 {
     states = [];
@@ -10,6 +10,7 @@ class State
     mediaElements = new Set();
     debounceTimers = new Map();
     throttleTimers = new Map();
+    instanceCounter = new Map();
 
     constructor() {
         this.stateInit = this.stateInit.bind(this);
@@ -448,8 +449,10 @@ class State
         let bindAttr = element.getAttribute('data-state-bind');
         const chainAttr = element.getAttribute('data-state-trigger-chain');
         const condition = element.getAttribute('data-state-condition');
+        const instantiateAttr = element.getAttribute('data-state-instantiate');
+        const removeAttr = element.getAttribute('data-state-remove');
 
-        if (!bindAttr && !chainAttr) {
+        if (!bindAttr && !chainAttr && !instantiateAttr && !removeAttr) {
             const parentState = element.closest('[data-state]');
             if (parentState && parentState.id) {
                 bindAttr = parentState.id;
@@ -527,6 +530,16 @@ class State
         const soundName = triggerElement.getAttribute('data-state-sound');
         if (soundName) {
             this.playSound(soundName);
+        }
+
+        const instantiateId = triggerElement.getAttribute('data-state-instantiate');
+        if (instantiateId) {
+            this.handleInstantiate(triggerElement, instantiateId);
+        }
+
+        const removeId = triggerElement.getAttribute('data-state-remove');
+        if (removeId) {
+            this.handleRemove(triggerElement, removeId);
         }
 
         const attrName = triggerElement.getAttribute('data-state-attr');
@@ -683,6 +696,106 @@ class State
                     chainElement.click();
                 }
             });
+        }
+    }
+
+    handleInstantiate(triggerElement, sourceId) {
+        const sourceElement = document.getElementById(sourceId);
+        if (!sourceElement) {
+            console.warn(`State.js: Cannot instantiate - source element #${sourceId} not found`);
+            return;
+        }
+
+        const targetSelector = triggerElement.getAttribute('data-state-target');
+        const insertMode = triggerElement.getAttribute('data-state-insert') || 'append';
+
+        let targetElement;
+        if (targetSelector) {
+            if (targetSelector.startsWith('#')) {
+                targetElement = document.getElementById(targetSelector.substring(1));
+            } else {
+                targetElement = document.querySelector(targetSelector);
+            }
+        }
+
+        if (!targetElement) {
+            targetElement = document.body;
+        }
+
+        const counter = (this.instanceCounter.get(sourceId) || 0) + 1;
+        this.instanceCounter.set(sourceId, counter);
+
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(sourceElement.outerHTML, 'text/html');
+        const clonedElement = doc.body.firstElementChild;
+
+        if (!clonedElement) {
+            console.warn(`State.js: Failed to clone element #${sourceId}`);
+            return;
+        }
+
+        const newId = `${sourceId}-${counter}`;
+        clonedElement.id = newId;
+
+        if (clonedElement.style.display === 'none') {
+            clonedElement.style.display = '';
+        }
+
+        const attributes = triggerElement.attributes;
+        for (let i = 0; i < attributes.length; i++) {
+            const attr = attributes[i];
+            if (attr.name.startsWith('data-state-set-')) {
+                const attrName = attr.name.replace('data-state-set-', '');
+                if (attrName === 'class') {
+                    clonedElement.className = attr.value;
+                } else {
+                    clonedElement.setAttribute(`data-${attrName}`, attr.value);
+                }
+            }
+        }
+
+        if (insertMode === 'prepend') {
+            targetElement.insertBefore(clonedElement, targetElement.firstChild);
+        } else if (insertMode === 'before') {
+            targetElement.parentNode.insertBefore(clonedElement, targetElement);
+        } else if (insertMode === 'after') {
+            targetElement.parentNode.insertBefore(clonedElement, targetElement.nextSibling);
+        } else {
+            targetElement.appendChild(clonedElement);
+        }
+
+        const countAttr = `data-${sourceId}Count`;
+        sourceElement.setAttribute(countAttr, String(counter));
+
+        this.setupElement(clonedElement);
+    }
+
+    handleRemove(triggerElement, removeId) {
+        const condition = triggerElement.getAttribute('data-state-condition');
+
+        if (removeId.startsWith('.') || removeId.includes('[')) {
+            const elements = document.querySelectorAll(removeId);
+            elements.forEach(element => {
+                if (condition) {
+                    if (this.evaluateCondition(condition, element)) {
+                        element.remove();
+                    }
+                } else {
+                    element.remove();
+                }
+            });
+        } else {
+            const elementId = removeId.startsWith('#') ? removeId.substring(1) : removeId;
+            const element = document.getElementById(elementId);
+            if (element) {
+                if (condition) {
+                    if (this.evaluateCondition(condition, element)) {
+                        element.remove();
+                    }
+                } else {
+                    element.remove();
+                }
+            }
         }
     }
 

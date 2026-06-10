@@ -5,6 +5,29 @@ All notable changes to State.js will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2025-01-XX
+
+### Added
+- **Instance Management System**: Dynamically create and remove DOM elements using declarative triggers
+- New `data-state-instantiate="id"` attribute to clone elements by ID
+- New `data-state-remove="selector"` attribute to remove elements by ID or CSS selector
+- New `data-state-target="selector"` attribute to specify where cloned elements are inserted
+- New `data-state-insert="mode"` attribute with modes: append, prepend, before, after
+- New `data-state-set-*="value"` attributes to override attributes on cloned instances
+- Automatic unique ID generation for cloned elements (e.g., `enemy-1`, `enemy-2`)
+- Automatic instance counting on source elements via `data-{sourceId}Count` attribute
+- Conditional removal support using `data-state-condition` with remove triggers
+- Auto-initialization of State.js on all cloned elements
+
+### Security
+- Uses `DOMParser` for secure element cloning (consistent with v1.4.2 HTML includes)
+- No `innerHTML` usage in cloning operations
+- XSS-safe and CSP-compliant
+
+### Changed
+- Updated documentation with comprehensive instance management examples
+- Added interactive demo in index.html showcasing enemy spawner system
+
 ## [1.4.2] - 2025-01-XX
 
 ### Security
