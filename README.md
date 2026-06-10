@@ -2,7 +2,7 @@
 
 ![State.js Logo](logo.png)
 
-**State.js** is a lightweight CSS frontend framework that exposes DOM element states as CSS variables for data-driven animations and reactive UIs. Build dynamic, interactive interfaces using pure CSS and HTML.
+**State.js** is a CSS‑reactive framework that makes UI state and updates flow through CSS instead of JavaScript logic, enabling data‑driven animations and reactive UIs. Build dynamic, interactive interfaces using pure CSS and HTML.
 
 [![License](https://img.shields.io/badge/License-MIT-blue)](#license)
 ![npm bundle size](https://img.shields.io/bundlephobia/min/%40idevgames%2Fstate-js)
