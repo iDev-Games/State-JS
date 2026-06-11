@@ -423,7 +423,7 @@
 
                     <hr id="headerLine" />
 
-                    <h2 id="documentation">Documentation <sup>v1.5.0</sup></h2>
+                    <h2 id="documentation">Documentation <sup>v1.5.1</sup></h2>
                 </div>
             </div>
 
@@ -1756,6 +1756,120 @@ State.trace('hp', true)</pre>
             <hr/>
 
             <div class="container alignCenter background7" data-state data-state-var="true">
+                <div class="box boxBG title">
+                    <h2>Extension 5.7: Random Number Generation (v1.5.1)</h2>
+                </div>
+                <div class="box boxBG fadeIn" data-state>
+                    <p>
+                        <strong style="color: #34d399;">New in v1.5.1:</strong>
+                        Generate random numbers declaratively for dice rolls, loot drops, damage calculation, and procedural generation - essential for game development!
+                    </p>
+
+                    <h3 style="margin-top: 30px; color: #fff;">Live Demo: Dice Roller & Loot System</h3>
+
+                    <div id="dice-container" style="padding: 20px; background: rgba(0,0,0,0.3); border-radius: 8px; margin: 20px 0;">
+                        <div id="dice-game" data-state data-state-watch="d6,d20,loot" data-d6="1" data-d20="1" data-loot="0">
+                            <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+                                <button data-state-trigger
+                                        data-state-bind="dice-game"
+                                        data-state-attr="d6"
+                                        data-state-random="6"
+                                        style="padding: 10px 20px; background: #ff6b6b; border: none; border-radius: 4px; color: white; cursor: pointer;">
+                                    Roll d6
+                                </button>
+                                <button data-state-trigger
+                                        data-state-bind="dice-game"
+                                        data-state-attr="d20"
+                                        data-state-random="20"
+                                        style="padding: 10px 20px; background: #8a2be2; border: none; border-radius: 4px; color: white; cursor: pointer;">
+                                    Roll d20
+                                </button>
+                                <button data-state-trigger
+                                        data-state-bind="dice-game"
+                                        data-state-attr="loot"
+                                        data-state-random="0,100"
+                                        style="padding: 10px 20px; background: #51cf66; border: none; border-radius: 4px; color: white; cursor: pointer;">
+                                    Roll Loot (0-100%)
+                                </button>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
+                                <div style="padding: 20px; background: rgba(255,107,107,0.2); border: 2px solid #ff6b6b; border-radius: 8px;">
+                                    <div style="color: #fff; font-weight: bold; margin-bottom: 10px;">d6 Result</div>
+                                    <div style="font-size: 48px; color: #ff6b6b; font-weight: bold;">
+                                        <span data-state-display="d6">1</span>
+                                    </div>
+                                </div>
+                                <div style="padding: 20px; background: rgba(138,43,226,0.2); border: 2px solid #8a2be2; border-radius: 8px;">
+                                    <div style="color: #fff; font-weight: bold; margin-bottom: 10px;">d20 Result</div>
+                                    <div style="font-size: 48px; color: #da70d6; font-weight: bold;">
+                                        <span data-state-display="d20">1</span>
+                                    </div>
+                                </div>
+                                <div style="padding: 20px; background: rgba(81,207,102,0.2); border: 2px solid #51cf66; border-radius: 8px;">
+                                    <div style="color: #fff; font-weight: bold; margin-bottom: 10px;">Loot Rarity %</div>
+                                    <div style="font-size: 48px; color: #51cf66; font-weight: bold;">
+                                        <span data-state-display="loot">0</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 30px; color: #fff;">Code Example:</h3>
+                    <div class="code-box">
+                        <pre>&lt;!-- Dice shorthand: 1-6 --&gt;
+&lt;button data-state-trigger
+        data-state-bind="player"
+        data-state-attr="damage"
+        data-state-random="6"&gt;
+  Roll 1d6 Damage
+&lt;/button&gt;
+
+&lt;!-- Explicit range: 0-100 --&gt;
+&lt;button data-state-trigger
+        data-state-bind="loot"
+        data-state-attr="rarity"
+        data-state-random="0,100"&gt;
+  Roll Loot Rarity
+&lt;/button&gt;
+
+&lt;!-- Random with chains --&gt;
+&lt;button data-state-trigger
+        data-state-bind="combat"
+        data-state-attr="damage"
+        data-state-random="1,6"
+        data-state-trigger-chain="applyDamage"&gt;
+  Attack
+&lt;/button&gt;</pre>
+                    </div>
+
+                    <div style="margin-top: 30px; padding: 20px; background: rgba(138,43,226,0.1); border-radius: 8px; border: 2px solid #8a2be2;">
+                        <h4 style="color: #da70d6; margin-bottom: 15px;">Key Features:</h4>
+                        <ul style="color: #ccc; margin-left: 20px; line-height: 1.8;">
+                            <li><strong>Dice Shorthand:</strong> <code>data-state-random="6"</code> generates 1-6 (common for game dice)</li>
+                            <li><strong>Explicit Range:</strong> <code>data-state-random="0,100"</code> generates 0-100 (percentages, custom ranges)</li>
+                            <li><strong>Zero Dependencies:</strong> Uses native <code>Math.random()</code></li>
+                            <li><strong>Works with Conditions:</strong> Only roll if conditions are met</li>
+                            <li><strong>Works with Chains:</strong> Roll damage, then apply to enemy</li>
+                            <li><strong>Works with Intervals:</strong> Random events every N seconds</li>
+                            <li><strong>Works with Instantiate:</strong> Spawn enemies with random health</li>
+                        </ul>
+                    </div>
+
+                    <div style="margin-top: 30px; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                        <strong style="color: #da70d6;">Use Cases:</strong>
+                        <p style="color: #ccc; margin: 10px 0;">
+                            Perfect for dice rolls, loot drops, damage calculation, spawn rates, procedural generation, probability systems,
+                            random events, and any game mechanic that needs randomization!
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <hr/>
+
+            <div class="container alignCenter background8" data-state data-state-var="true">
                 <div class="box boxBG title">
                     <h2>CSS Variables Available</h2>
                 </div>

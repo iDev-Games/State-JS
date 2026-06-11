@@ -1,7 +1,7 @@
 {
   "name": "@idevgames/state-js",
-  "version": "1.5.0",
-  "description": "State.js exposes DOM element states as CSS variables for data-driven animations and game development. Track data attributes, form inputs, media playback, and visibility - the missing piece for pure CSS/HTML game development.",
+  "version": "1.5.1",
+  "description": "State.js is a CSS reactive framework that makes UI state and updates flow through CSS instead of JavaScript logic, enabling data driven animations and reactive UIs. Build dynamic, interactive interfaces using pure CSS and HTML.",
   "main": "src/state.js",
   "repository": {
     "type": "git",

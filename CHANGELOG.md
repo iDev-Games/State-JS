@@ -5,6 +5,31 @@ All notable changes to State.js will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.1] - 2025-01-XX
+
+### Added
+- **Random Number Generation**: Generate random numbers declaratively for game development
+- New `data-state-random="max"` attribute for dice shorthand (1 to max)
+- New `data-state-random="min,max"` attribute for explicit ranges
+- Dice shorthand support: `data-state-random="6"` generates 1-6 (common d6)
+- Explicit range support: `data-state-random="0,100"` generates 0-100 (percentages)
+- Works seamlessly with triggers, chains, conditions, intervals, and instantiate
+- Uses native `Math.random()` - zero dependencies
+
+### Documentation
+- **Important Notes section** added to README covering common gotchas and advanced patterns:
+  - Data attribute naming (HTML lowercase requirement)
+  - Trigger chain atomicity (non-transactional behavior)
+  - `data-state-value` numeric and boolean duality
+  - Autofire edge cases (won't re-trigger if condition already true at page load)
+  - Instantiate display content examples (beyond game attributes)
+- Added comprehensive random number generation documentation
+- Added interactive dice roller demo to index.html
+- Improved documentation clarity for instance management display content use cases
+
+### Changed
+- Updated version to v1.5.1 across all files
+
 ## [1.5.0] - 2025-01-XX
 
 ### Added

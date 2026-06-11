@@ -1,4 +1,4 @@
-/* State.js v1.5.0 by iDev Games */
+/* State.js v1.5.1 by iDev Games */
 class State
 {
     states = [];
@@ -543,12 +543,28 @@ class State
         }
 
         const attrName = triggerElement.getAttribute('data-state-attr');
-        const attrValue = triggerElement.getAttribute('data-state-value');
+        let attrValue = triggerElement.getAttribute('data-state-value');
         const toggleAttr = triggerElement.getAttribute('data-state-toggle');
         const incrementValue = triggerElement.getAttribute('data-state-increment');
         const decrementValue = triggerElement.getAttribute('data-state-decrement');
         const setValue = triggerElement.getAttribute('data-state-set');
+        const randomAttr = triggerElement.getAttribute('data-state-random');
         const chainTriggers = triggerElement.getAttribute('data-state-trigger-chain');
+
+        if (randomAttr && attrName) {
+            const parts = randomAttr.split(',').map(p => p.trim());
+            let min, max;
+            if (parts.length === 1) {
+                min = 1;
+                max = parseInt(parts[0]);
+            } else {
+                min = parseInt(parts[0]);
+                max = parseInt(parts[1]);
+            }
+            if (!isNaN(min) && !isNaN(max)) {
+                attrValue = String(Math.floor(Math.random() * (max - min + 1)) + min);
+            }
+        }
         const condition = triggerElement.getAttribute('data-state-condition');
         if (condition && bindAttr) {
             const targetIds = bindAttr.split(',').map(id => id.trim());

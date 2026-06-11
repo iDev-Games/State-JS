@@ -887,6 +887,110 @@ When using `data-state-watch="health,score,level"`:
 | `data-state-target="selector"` | Where to insert cloned element (default: body) | `data-state-target="#game"` |
 | `data-state-insert="mode"` | Insert mode: append, prepend, before, after | `data-state-insert="prepend"` |
 | `data-state-set-*="value"` | Override attribute on cloned element | `data-state-set-health="100"` |
+| **NEW v1.5.1** | **Random Number Generation** | |
+| `data-state-random="max"` | Generate random number (1 to max, dice shorthand) | `data-state-random="6"` |
+| `data-state-random="min,max"` | Generate random number (min to max, explicit range) | `data-state-random="0,100"` |
+
+### Important Notes
+
+#### Data Attribute Naming (HTML Requirement)
+
+**All data attributes must be lowercase.** This is an HTML specification requirement, not a State.js limitation.
+
+```html
+<!-- ✅ Correct: lowercase -->
+<div data-state-watch="health,mana"></div>
+
+<!-- ❌ Wrong: will be lowercased by browser -->
+<div data-state-watch="Health,Mana"></div>  <!-- becomes "health,mana" -->
+```
+
+HTML automatically lowercases all attribute names. If you write `data-myAttribute`, the browser converts it to `data-myattribute`. State.js expects lowercase names throughout.
+
+#### Trigger Chain Atomicity
+
+**Trigger chains are not transactional.** If a link in the chain fails its condition, subsequent links still fire.
+
+```html
+<!-- If link2 condition fails, link3 and link4 still execute -->
+<button data-state-trigger
+        data-state-trigger-chain="link1,link2,link3,link4">
+</button>
+```
+
+This is intentional behavior. Each link in a chain is independent. If you need atomic transactions, use a single trigger with complex conditions instead of chains.
+
+#### data-state-value: Numeric and Boolean Duality
+
+**`data-state-value` works on both numeric attributes AND boolean toggles.** It writes the raw attribute directly, enabling idempotent state assignment (set to known state vs. blind toggle).
+
+```html
+<!-- Numeric: Set exact value -->
+<button data-state-trigger
+        data-state-bind="player"
+        data-state-attr="health"
+        data-state-value="100">
+  Reset Health
+</button>
+
+<!-- Boolean: Set to known state (not toggle) -->
+<button data-state-trigger
+        data-state-bind="modal"
+        data-state-attr="open"
+        data-state-value="false">
+  Close Modal (idempotent - always closed)
+</button>
+```
+
+Use `data-state-toggle` for flip behavior, `data-state-value` for assignment.
+
+#### Autofire Edge Case
+
+**Autofire won't re-trigger if condition was already true at page load.**
+
+```html
+<!-- If enemyHp is already 0 on page load, this won't fire -->
+<div data-state-trigger
+     data-state-condition="enemyHp == 0"
+     data-state-autofire="true"
+     data-state-trigger-chain="showVictory">
+</div>
+```
+
+Autofire detects when a condition *becomes* true (transitions from false→true). If the condition is already true at initialization, autofire won't trigger. Initialize your state values carefully to avoid this.
+
+#### Instantiate: Beyond Game Attributes
+
+**`data-state-set-*` works for display content, not just game attributes.** Use it to pass visual data (icons, labels, text) into templates.
+
+```html
+<!-- Game attributes (common pattern) -->
+<button data-state-instantiate="enemy"
+        data-state-set-health="100"
+        data-state-set-damage="20">
+</button>
+
+<!-- Display content (powerful, less obvious) -->
+<button data-state-instantiate="achievement-card"
+        data-state-set-icon="🏆"
+        data-state-set-title="First Victory"
+        data-state-set-description="Defeated your first enemy">
+  Unlock Achievement
+</button>
+
+<!-- Template uses data-state-display to show values -->
+<template id="achievement-card">
+  <div class="card">
+    <span data-state-display="icon"></span>
+    <h3 data-state-display="title"></h3>
+    <p data-state-display="description"></p>
+  </div>
+</template>
+```
+
+This unlocks template use cases beyond game mechanics - UI cards, notifications, dynamic lists, etc.
+
+---
 
 ### Per-State Configuration
 
@@ -1864,6 +1968,138 @@ Instance management uses `DOMParser` for secure element cloning (same as v1.4.2 
 - Unique IDs: `{sourceId}-{counter}` (e.g., `enemy-1`, `enemy-2`)
 - Instance count: `data-{sourceId}Count` on source element
 - Clones automatically have `display: none` removed if present on template
+
+---
+
+## New in v1.5.1: Random Number Generation
+
+**Essential for game development** - Generate random numbers declaratively using pure HTML attributes.
+
+State.js provides simple, zero-dependency random number generation for:
+- 🎲 Dice rolls
+- 🎁 Loot drops
+- ⚔️ Damage calculation
+- 🎰 Probability systems
+- 🎮 Procedural generation
+
+### Basic Usage
+
+```html
+<!-- Dice shorthand: 1-6 -->
+<button data-state-trigger
+        data-state-bind="player"
+        data-state-attr="damage"
+        data-state-random="6">
+  Roll 1d6 Damage
+</button>
+
+<!-- Explicit range: 0-100 -->
+<button data-state-trigger
+        data-state-bind="loot"
+        data-state-attr="rarity"
+        data-state-random="0,100">
+  Roll Loot Rarity
+</button>
+
+<!-- Any range: 10-20 -->
+<button data-state-trigger
+        data-state-bind="enemy"
+        data-state-attr="health"
+        data-state-random="10,20">
+  Spawn with Random HP
+</button>
+```
+
+### Syntax Options
+
+**Dice shorthand (1 to N):**
+```html
+data-state-random="6"     <!-- 1-6 (common d6) -->
+data-state-random="20"    <!-- 1-20 (common d20) -->
+data-state-random="100"   <!-- 1-100 (percentile) -->
+```
+
+**Explicit range (min to max):**
+```html
+data-state-random="1,6"    <!-- 1-6 (explicit) -->
+data-state-random="0,100"  <!-- 0-100 (percentage) -->
+data-state-random="10,50"  <!-- 10-50 (custom range) -->
+```
+
+### Advanced Patterns
+
+**Random with conditions:**
+```html
+<!-- Only roll if player has attempts left -->
+<button data-state-trigger
+        data-state-bind="player"
+        data-state-attr="reward"
+        data-state-random="1,100"
+        data-state-condition="attempts > 0">
+  Try Your Luck
+</button>
+```
+
+**Random with trigger chains:**
+```html
+<!-- Roll damage, then apply to enemy -->
+<button data-state-trigger
+        data-state-bind="combat"
+        data-state-attr="damage"
+        data-state-random="1,6"
+        data-state-trigger-chain="applyDamage">
+  Attack
+</button>
+
+<div id="applyDamage"
+     data-state-trigger
+     data-state-bind="enemy"
+     data-state-attr="health"
+     data-state-decrement="calc(var(--state-damage))"></div>
+```
+
+**Random intervals:**
+```html
+<!-- Random event every 5 seconds -->
+<div data-state-trigger
+     data-state-interval="5000"
+     data-state-bind="game"
+     data-state-attr="event"
+     data-state-random="1,10">
+</div>
+```
+
+**Random with instantiate:**
+```html
+<!-- Spawn enemy with random health -->
+<button data-state-trigger
+        data-state-instantiate="enemy-template"
+        data-state-attr="health"
+        data-state-random="50,100"
+        data-state-set-health="calc(var(--state-health))">
+  Spawn Random Enemy
+</button>
+```
+
+### Configuration
+
+| Attribute | Description | Example |
+|-----------|-------------|---------|
+| `data-state-random="max"` | Dice shorthand: 1 to max | `data-state-random="6"` → 1-6 |
+| `data-state-random="min,max"` | Explicit range: min to max | `data-state-random="0,100"` → 0-100 |
+
+**Requirements:**
+- Must have `data-state-trigger` attribute
+- Must specify `data-state-attr` (which attribute to set)
+- Must have `data-state-bind` or be inside `[data-state]` element
+- Uses native `Math.random()` - zero dependencies
+
+**How it works:**
+1. When trigger fires, checks for `data-state-random`
+2. Parses range (single number = dice shorthand, two numbers = explicit)
+3. Generates random integer in range using `Math.floor(Math.random() * (max - min + 1)) + min`
+4. Sets the attribute value to the random number
+5. Works seamlessly with conditions, chains, intervals, and all other State.js features
 
 ---
 
