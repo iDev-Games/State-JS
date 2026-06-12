@@ -1,4 +1,4 @@
-/* State.js v1.6.1 by iDev Games */
+/* State.js v1.6.2 by iDev Games */
 class State
 {
     states = [];
@@ -440,6 +440,7 @@ class State
                 if (displayElement) {
                     displayElement.textContent = inputValue;
                 }
+                this.updateConditionalTriggers(targetId);
             }
         });
     }
@@ -544,11 +545,6 @@ class State
             this.handleInstantiate(triggerElement, instantiateId);
         }
 
-        const removeId = triggerElement.getAttribute('data-state-remove');
-        if (removeId) {
-            this.handleRemove(triggerElement, removeId);
-        }
-
         const attrName = triggerElement.getAttribute('data-state-attr');
         let attrValue = triggerElement.getAttribute('data-state-value');
         const toggleAttr = triggerElement.getAttribute('data-state-toggle');
@@ -606,7 +602,7 @@ class State
                 }
                 let increment;
                 if (incrementValue.includes('calc(')) {
-                    increment = this.evaluateCalc(incrementValue, targetElement);
+                    increment = this.evaluateCalc(incrementValue, triggerElement);
                 } else {
                     increment = parseFloat(incrementValue);
                 }
@@ -644,7 +640,7 @@ class State
                 }
                 let decrement;
                 if (decrementValue.includes('calc(')) {
-                    decrement = this.evaluateCalc(decrementValue, targetElement);
+                    decrement = this.evaluateCalc(decrementValue, triggerElement);
                 } else {
                     decrement = parseFloat(decrementValue);
                 }
@@ -719,6 +715,11 @@ class State
                     chainElement.click();
                 }
             });
+        }
+
+        const removeId = triggerElement.getAttribute('data-state-remove');
+        if (removeId) {
+            this.handleRemove(triggerElement, removeId);
         }
     }
 

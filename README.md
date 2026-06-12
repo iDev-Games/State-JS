@@ -675,7 +675,7 @@ document.addEventListener('state:achievement-unlocked', (e) => {
 
 ---
 
-## Complete Game Example (Zero JavaScript Logic)
+## Complete Game Example (All Declarative)
 
 Combining all extensions, here's a complete idle clicker game:
 
@@ -1955,7 +1955,7 @@ Instance management uses `DOMParser` for secure element cloning (same as v1.4.2 
 
 ### Reading Element Values at Instantiate Time (v1.6.1)
 
-**The final piece for zero-JavaScript apps** - Read values from form inputs or any element at trigger-time.
+**The final piece for pur declarative apps** - Read values from form inputs or any element at trigger-time.
 
 Use `data-state-set-*-from` to capture user input when cloning, enabling fully declarative forms without any JavaScript.
 
@@ -2058,7 +2058,7 @@ addBtn.addEventListener('mousedown', () => {
 </script>
 ```
 
-**After v1.6.1 (zero JavaScript):**
+**After v1.6.1 (fully declerative):**
 ```html
 <input id="incomeName">
 <button data-state-trigger
@@ -2588,7 +2588,7 @@ State.js includes **state-animations.css** - a companion stylesheet with predefi
 }
 ```
 
-### Clicker Game (Zero JavaScript!)
+### Clicker Game (Fully declarative)
 
 ```html
 <div id="clicker"

@@ -5,6 +5,25 @@ All notable changes to State.js will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.2]
+
+### Fixed
+- Fixed conditional triggers not updating when input bindings change - `handleInputBinding` now calls `updateConditionalTriggers`
+- Fixed `calc()` expressions in increment/decrement reading from wrong context - now reads CSS variables from trigger element instead of target element
+- Fixed remove operation executing before increment/decrement - `data-state-remove` now runs last, allowing triggers to decrement totals before removing parent elements
+
+### Changed
+- Reordered operations in `handleTriggerClick` to execute `data-state-remove` last, after all attribute operations (increment, decrement, set, toggle) and chain triggers
+
+### Technical
+- Operation order ensures triggers can read CSS variables from parent elements before removal
+- Critical for patterns like `data-state-decrement="calc(var(--state-amount))"` combined with `data-state-remove="parent"`
+
+### Why v1.6.2?
+- Patch version bump: bug fixes only, no new features
+- Resolves critical issue where remove buttons couldn't decrement totals in budget trackers and similar UIs
+- Maintains full backward compatibility with v1.6.1
+
 ## [1.6.1]
 
 ### Added
