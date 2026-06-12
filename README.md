@@ -863,7 +863,8 @@ When using `data-state-watch="health,score,level"`:
 | **NEW v1.1.0** | **Game Development Extensions** | |
 | `data-state-interval="ms"` | Auto-fire trigger every N milliseconds (respects conditions) | `data-state-interval="1000"` |
 | `data-state-set="value"` | Set attribute to exact value (supports calc()) | `data-state-set="100"` or `calc(var(--state-max))` |
-| `data-state-text="template"` | Template string with {token} interpolation | `data-state-text="HP {health}/{healthmax}"` |
+| `data-state-text="template"` | Template string with expression support (v1.6.0: supports full expressions + string concat) | `data-state-text="{30 + (level - 1) * 10}hp"` or `"{health > 0 ? health + 'hp' : 'DEAD'}"` |
+| `data-state-compute="expr"` | Computed attributes with expressions (v1.6.0: supports string concatenation) | `data-state-compute="label = hp + 'hp'; max = level * 100"` |
 | `data-state-class="className"` | Conditional CSS class application | `data-state-class="critical"` |
 | `data-state-class-condition="expr"` | Condition for class (use with data-state-class) | `data-state-class-condition="health <= 20"` |
 | `data-state-sound="soundName"` | Play Web Audio sound on trigger (click, levelup, buy, error, coin) | `data-state-sound="coin"` |
@@ -2100,6 +2101,222 @@ data-state-random="10,50"  <!-- 10-50 (custom range) -->
 3. Generates random integer in range using `Math.floor(Math.random() * (max - min + 1)) + min`
 4. Sets the attribute value to the random number
 5. Works seamlessly with conditions, chains, intervals, and all other State.js features
+
+---
+
+## New in v1.6.0: Expression-Based Templates
+
+**Templating without leaving HTML** - Computed values, string concatenation, and conditional logic in pure declarative attributes.
+
+CSS has fundamental limitations - you cannot use `calc()` in the `content` property, and you cannot concatenate strings from custom properties. State.js v1.6.0 solves this with expression-based templates.
+
+### The Problem (Before v1.6.0)
+
+```css
+/* This doesn't work in CSS! */
+.enemy-label:after {
+  --hp: calc(30 + (var(--state-level) - 1) * 10);
+  content: var(--hp) "hp";  /* Can't concatenate! */
+}
+```
+
+### The Solution (v1.6.0)
+
+```html
+<!-- Simple: Computed value + string -->
+<span data-state-text="{30 + (level - 1) * 10}hp">30hp</span>
+
+<!-- Conditional: Ternary operator -->
+<span data-state-text="{health > 0 ? health + 'hp' : 'DEAD'}">100hp</span>
+
+<!-- Complex: Multiple expressions -->
+<span data-state-text="Level {level} - {xp}/{xpMax} XP">Level 5 - 750/1000 XP</span>
+```
+
+### Basic Usage
+
+**Simple attribute display (still works):**
+```html
+<span data-state-text="HP: {health}">HP: 100</span>
+```
+
+**String concatenation:**
+```html
+<span data-state-text="{health}hp">100hp</span>
+<span data-state-text="{gold} gold">500 gold</span>
+```
+
+**Computed numeric expressions:**
+```html
+<!-- Enemy HP scales with player level -->
+<span data-state-text="{30 + (level - 1) * 10}hp">30hp</span>
+
+<!-- Damage range -->
+<span data-state-text="{minDmg + '-' + maxDmg}">10-15</span>
+
+<!-- Percentage -->
+<span data-state-text="{health / maxHealth * 100}%">75%</span>
+```
+
+**Conditional display with ternary:**
+```html
+<!-- Show different text based on condition -->
+<span data-state-text="{health > 0 ? health + 'hp' : 'DEAD'}">100hp</span>
+
+<!-- Loot rarity -->
+<span data-state-text="{rarity >= 75 ? 'Legendary' : rarity >= 25 ? 'Rare' : 'Common'}">Common</span>
+
+<!-- Status indicator -->
+<span data-state-text="{active ? 'Online' : 'Offline'}">Online</span>
+```
+
+**Multiple expressions in one template:**
+```html
+<span data-state-text="Level {level} Hero">Level 5 Hero</span>
+<span data-state-text="{name} - {health}/{maxHealth}hp">Warrior - 75/100hp</span>
+<span data-state-text="XP: {xp}/{xpMax} ({xp / xpMax * 100}%)">XP: 750/1000 (75%)</span>
+```
+
+### Advanced Patterns
+
+**Nested expressions:**
+```html
+<span data-state-text="{level > 10 ? 'Veteran (' + level + ')' : 'Novice'}">Novice</span>
+```
+
+**Math operations:**
+```html
+<span data-state-text="{health + shield}hp total">{health + shield}hp total</span>
+<span data-state-text="DPS: {damage * attackSpeed}">DPS: 45</span>
+```
+
+**Logical operations:**
+```html
+<span data-state-text="{gold >= 100 and level >= 5 ? 'Can Buy' : 'Locked'}">Locked</span>
+```
+
+### String Concatenation in Computed State
+
+**v1.6.0 also adds string concatenation to `data-state-compute`:**
+
+```html
+<div data-state
+     data-state-watch="hp,level"
+     data-state-compute="
+       enemyHp = 30 + (level - 1) * 10;
+       hpLabel = enemyHp + 'hp';
+       status = hp > 0 ? 'Alive' : 'Dead'
+     ">
+  <span data-state-display="hpLabel">30hp</span>
+  <span data-state-display="status">Alive</span>
+</div>
+```
+
+**Compute creates attributes, then display them:**
+- Computation result stored as `data-hpLabel="30hp"`
+- Can be used in CSS, displayed with `data-state-display`, or referenced elsewhere
+- Reusable across multiple elements
+
+### Expression Syntax Reference
+
+**Operators supported:**
+- **Arithmetic**: `+`, `-`, `*`, `/`
+- **Comparison**: `==`, `!=`, `<`, `>`, `<=`, `>=`
+- **Logical**: `and`/`&&`, `or`/`||`, `not`/`!`
+- **Ternary**: `condition ? trueValue : falseValue`
+- **Grouping**: `(expression)`
+
+**String concatenation:**
+```html
+{value + 'suffix'}
+{'prefix' + value}
+{value1 + ' ' + value2}
+```
+
+**Values:**
+- Attribute names: `{health}` resolves to `data-health` attribute value
+- Numbers: `{100}`, `{3.14}`
+- Strings: `{'text'}`, `{"text"}`
+- Booleans: `{true}`, `{false}`
+
+**Examples:**
+```html
+<!-- Math + string -->
+{10 + 5 + 'hp'}  → "15hp"
+
+<!-- Ternary + concat -->
+{health > 0 ? health + 'hp' : 'DEAD'}  → "100hp" or "DEAD"
+
+<!-- Complex expression -->
+{level > 10 ? 'Veteran Lv' + level : 'Novice'}  → "Veteran Lv15"
+
+<!-- Multiple operations -->
+{(damage + bonusDmg) * critMultiplier + ' damage'}  → "150 damage"
+```
+
+### Why Expression Templates?
+
+**Solves CSS limitations:**
+- ✅ Computed values in display text (impossible in CSS `content`)
+- ✅ String concatenation (impossible in CSS)
+- ✅ Conditional text (no if/else in CSS)
+- ✅ Complex calculations for display
+
+**More intuitive than alternatives:**
+- Better than: Compute → attribute → display (two steps)
+- Syntax: `{expr}` feels natural
+- Inline conditionals: Ternary in template, not separate elements
+
+### Use Cases
+
+**Game development:**
+```html
+<!-- Scaling enemy stats -->
+<span data-state-text="{30 + (level - 1) * 10}hp">30hp</span>
+
+<!-- Loot system -->
+<span data-state-text="{rarity >= 80 ? 'Legendary' : rarity >= 50 ? 'Rare' : 'Common'}">Common</span>
+
+<!-- Combat log -->
+<div data-state-text="{attacker} dealt {damage} damage to {defender}">...</div>
+```
+
+**Dynamic UIs:**
+```html
+<!-- User status -->
+<span data-state-text="{online ? 'Active now' : 'Last seen ' + lastSeen}">Active now</span>
+
+<!-- Shopping cart -->
+<span data-state-text="{itemCount} items ({total} gold)">3 items (150 gold)</span>
+
+<!-- Progress indicators -->
+<span data-state-text="{completed}/{total} tasks ({completed/total*100}%)">7/10 tasks (70%)</span>
+```
+
+**Form validation:**
+```html
+<span data-state-text="{length < 8 ? 'Too short' : length > 20 ? 'Too long' : 'Valid'}">Valid</span>
+```
+
+### Configuration
+
+**Expression Templates:**
+| Attribute | Description | Example |
+|-----------|-------------|---------|
+| `data-state-text="{expr}"` | Template with expressions | `data-state-text="{hp}hp"` |
+| `data-state-text="text {expr} text"` | Mixed static + dynamic | `data-state-text="Level {level} Hero"` |
+
+**Computed State with Strings:**
+| Attribute | Description | Example |
+|-----------|-------------|---------|
+| `data-state-compute="name=expr"` | Compute and store result | `data-state-compute="label = hp + 'hp'"` |
+| `data-state-compute="a=expr; b=expr"` | Multiple computations | `data-state-compute="sum = a + b; label = sum + 'hp'"` |
+
+**Requirements:**
+- `data-state-text` requires `data-state-bind` pointing to element with watched attributes
+- Expressions evaluated using existing State.js expression parser
+- String concatenation using `+` operator (auto-detects strings vs numbers)
+- All watched attributes available as identifiers in expressions
 
 ---
 

@@ -423,7 +423,7 @@
 
                     <hr id="headerLine" />
 
-                    <h2 id="documentation">Documentation <sup>v1.5.1</sup></h2>
+                    <h2 id="documentation">Documentation <sup>v1.6.0</sup></h2>
                 </div>
             </div>
 
@@ -1870,6 +1870,146 @@ State.trace('hp', true)</pre>
             <hr/>
 
             <div class="container alignCenter background8" data-state data-state-var="true">
+                <div class="box boxBG title">
+                    <h2>Extension 5.8: Expression-Based Templates (v1.6.0)</h2>
+                </div>
+                <div class="box boxBG fadeIn" data-state>
+                    <p>
+                        <strong style="color: #34d399;">New in v1.6.0:</strong>
+                        Templating with expressions, string concatenation, and conditional logic - solves CSS content limitations!
+                    </p>
+
+                    <h3 style="margin-top: 30px; color: #fff;">Live Demo: Dynamic Text & Expressions</h3>
+
+                    <div id="expression-demo" style="padding: 20px; background: rgba(0,0,0,0.3); border-radius: 8px; margin: 20px 0;">
+                        <div id="game-state" data-state data-state-watch="health,level,gold,status" data-health="75" data-level="5" data-gold="350" data-status="alive">
+
+                            <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+                                <button data-state-trigger
+                                        data-state-bind="game-state"
+                                        data-state-attr="health"
+                                        data-state-increment="25"
+                                        style="padding: 10px 20px; background: #51cf66; border: none; border-radius: 4px; color: white; cursor: pointer;">
+                                    Heal (+25)
+                                </button>
+                                <button data-state-trigger
+                                        data-state-bind="game-state"
+                                        data-state-attr="health"
+                                        data-state-increment="-25"
+                                        style="padding: 10px 20px; background: #ff6b6b; border: none; border-radius: 4px; color: white; cursor: pointer;">
+                                    Take Damage (-25)
+                                </button>
+                                <button data-state-trigger
+                                        data-state-bind="game-state"
+                                        data-state-attr="level"
+                                        data-state-increment="1"
+                                        style="padding: 10px 20px; background: #8a2be2; border: none; border-radius: 4px; color: white; cursor: pointer;">
+                                    Level Up
+                                </button>
+                                <button data-state-trigger
+                                        data-state-bind="game-state"
+                                        data-state-attr="gold"
+                                        data-state-increment="50"
+                                        style="padding: 10px 20px; background: #ffd700; border: none; border-radius: 4px; color: black; cursor: pointer;">
+                                    Earn Gold
+                                </button>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-top: 20px;">
+
+                                <div style="padding: 20px; background: rgba(255,107,107,0.2); border: 2px solid #ff6b6b; border-radius: 8px;">
+                                    <div style="color: #999; font-size: 12px; margin-bottom: 5px;">String Concatenation</div>
+                                    <div style="font-size: 24px; color: #ff6b6b; font-weight: bold;">
+                                        <span data-state-bind="game-state" data-state-text="{health}hp">75hp</span>
+                                    </div>
+                                </div>
+
+                                <div style="padding: 20px; background: rgba(138,43,226,0.2); border: 2px solid #8a2be2; border-radius: 8px;">
+                                    <div style="color: #999; font-size: 12px; margin-bottom: 5px;">Computed Expression</div>
+                                    <div style="font-size: 24px; color: #da70d6; font-weight: bold;">
+                                        <span data-state-bind="game-state" data-state-text="{30 + (level - 1) * 10}hp enemy">80hp enemy</span>
+                                    </div>
+                                </div>
+
+                                <div style="padding: 20px; background: rgba(255,215,0,0.2); border: 2px solid #ffd700; border-radius: 8px;">
+                                    <div style="color: #999; font-size: 12px; margin-bottom: 5px;">Conditional (Ternary)</div>
+                                    <div style="font-size: 20px; color: #ffd700; font-weight: bold;">
+                                        <span data-state-bind="game-state" data-state-text="{health > 0 ? health + 'hp' : 'DEAD'}">75hp</span>
+                                    </div>
+                                </div>
+
+                                <div style="padding: 20px; background: rgba(81,207,102,0.2); border: 2px solid #51cf66; border-radius: 8px;">
+                                    <div style="color: #999; font-size: 12px; margin-bottom: 5px;">Complex Expression</div>
+                                    <div style="font-size: 16px; color: #51cf66; font-weight: bold;">
+                                        <span data-state-bind="game-state" data-state-text="{gold >= 500 ? 'Rich' : gold >= 200 ? 'Comfortable' : 'Poor'}">Comfortable</span>
+                                    </div>
+                                </div>
+
+                                <div style="padding: 20px; background: rgba(100,149,237,0.2); border: 2px solid #6495ed; border-radius: 8px;">
+                                    <div style="color: #999; font-size: 12px; margin-bottom: 5px;">Multiple Tokens</div>
+                                    <div style="font-size: 16px; color: #6495ed; font-weight: bold;">
+                                        <span data-state-bind="game-state" data-state-text="Lv{level} - {gold}g">Lv5 - 350g</span>
+                                    </div>
+                                </div>
+
+                                <div style="padding: 20px; background: rgba(255,105,180,0.2); border: 2px solid #ff69b4; border-radius: 8px;">
+                                    <div style="color: #999; font-size: 12px; margin-bottom: 5px;">Math + String</div>
+                                    <div style="font-size: 16px; color: #ff69b4; font-weight: bold;">
+                                        <span data-state-bind="game-state" data-state-text="{health + 25} max hp">100 max hp</span>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 30px; color: #fff;">Code Example:</h3>
+                    <div class="code-box">
+                        <pre>&lt;!-- String concatenation --&gt;
+&lt;span data-state-text="{health}hp"&gt;75hp&lt;/span&gt;
+
+&lt;!-- Computed value --&gt;
+&lt;span data-state-text="{30 + (level - 1) * 10}hp"&gt;80hp&lt;/span&gt;
+
+&lt;!-- Conditional (ternary) --&gt;
+&lt;span data-state-text="{health > 0 ? health + 'hp' : 'DEAD'}"&gt;75hp&lt;/span&gt;
+
+&lt;!-- Complex expression --&gt;
+&lt;span data-state-text="{gold >= 500 ? 'Rich' : 'Poor'}"&gt;Poor&lt;/span&gt;
+
+&lt;!-- Multiple expressions in template --&gt;
+&lt;span data-state-text="Level {level} - {gold}g"&gt;Level 5 - 350g&lt;/span&gt;</pre>
+                    </div>
+
+                    <div style="margin-top: 30px; padding: 20px; background: rgba(138,43,226,0.1); border-radius: 8px; border: 2px solid #8a2be2;">
+                        <h4 style="color: #da70d6; margin-bottom: 15px;">Key Features:</h4>
+                        <ul style="color: #ccc; margin-left: 20px; line-height: 1.8;">
+                            <li><strong>String Concatenation:</strong> <code>{value + 'suffix'}</code> combines values and text</li>
+                            <li><strong>Computed Expressions:</strong> <code>{30 + (level - 1) * 10}</code> for dynamic calculations</li>
+                            <li><strong>Conditional (Ternary):</strong> <code>{condition ? 'yes' : 'no'}</code> for if/else logic</li>
+                            <li><strong>Multiple Expressions:</strong> Mix static text with multiple <code>{expressions}</code></li>
+                            <li><strong>Math Operations:</strong> <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code> in expressions</li>
+                            <li><strong>Logical Operations:</strong> <code>and</code>, <code>or</code>, <code>not</code>, comparisons</li>
+                            <li><strong>Works with Compute:</strong> <code>data-state-compute="label = hp + 'hp'"</code> also supported</li>
+                            <li><strong>Solves CSS Limitations:</strong> <code>calc()</code> doesn't work in CSS <code>content</code> - this does!</li>
+                        </ul>
+                    </div>
+
+                    <div style="margin-top: 30px; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                        <strong style="color: #da70d6;">Why Expression Templates?</strong>
+                        <p style="color: #ccc; margin: 10px 0;">
+                            CSS cannot use <code>calc()</code> in the <code>content</code> property and cannot concatenate strings from custom properties.
+                            Expression templates solve this with syntax - computed values, string concatenation, and conditional logic
+                            all in declarative HTML attributes. Perfect for game UIs, dynamic dashboards, and any scenario where you need
+                            computed display text!
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <hr/>
+
+            <div class="container alignCenter" data-state data-state-var="true">
                 <div class="box boxBG title">
                     <h2>CSS Variables Available</h2>
                 </div>

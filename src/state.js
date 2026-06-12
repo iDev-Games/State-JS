@@ -1,4 +1,4 @@
-/* State.js v1.5.1 by iDev Games */
+/* State.js v1.6.0 by iDev Games */
 class State
 {
     states = [];
@@ -247,8 +247,15 @@ class State
                     consume();
                     const rightFn = parseMulDiv();
                     const currentLeft = leftFn;
-                    leftFn = type === 'ADD' 
-                        ? () => currentLeft() + rightFn() 
+                    leftFn = type === 'ADD'
+                        ? () => {
+                            const l = currentLeft();
+                            const r = rightFn();
+                            if (typeof l === 'string' || typeof r === 'string') {
+                                return String(l) + String(r);
+                            }
+                            return l + r;
+                        }
                         : () => currentLeft() - rightFn();
                 } else break;
             }
@@ -299,7 +306,7 @@ class State
 
     stateInit() {
         this.observer = new IntersectionObserver(this.stateObserver);
-        this.states = document.querySelectorAll('body,.enable-state,[data-state],[data-state-toggles],[data-state-watch],[data-state-trigger],[data-state-interval],[data-state-include]');
+        this.states = document.querySelectorAll('body,.enable-state,[data-state],[data-state-toggles],[data-state-watch],[data-state-trigger],[data-state-interval],[data-state-include],[data-state-text]');
         this.states.forEach((element, index) => {
             element.index = index;
             this.setupElement(element);
@@ -1191,12 +1198,17 @@ class State
         if (!data) return;
 
         let text = data.template;
-        const tokens = text.match(/\{([a-zA-Z][\w-]*)\}/g);
+        const tokens = text.match(/\{[^}]+\}/g);
         if (tokens) {
             tokens.forEach(token => {
-                const attr = token.slice(1, -1).toLowerCase();
-                const value = data.targetElement.getAttribute(`data-${attr}`) || '';
-                text = text.replace(token, value);
+                const expr = token.slice(1, -1);
+                try {
+                    const value = this._parseExpression(expr, data.targetElement);
+                    text = text.replace(token, String(value));
+                } catch (e) {
+                    console.warn('State.js: Invalid expression in template:', expr, e);
+                    text = text.replace(token, '');
+                }
             });
         }
         element.textContent = text;

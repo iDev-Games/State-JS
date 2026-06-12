@@ -5,6 +5,42 @@ All notable changes to State.js will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0] - 2025-01-XX
+
+### Added
+- **Expression-Based Templates**: Blade-like templating with computed values, string concatenation, and conditional logic
+- Enhanced `data-state-text` to support full expressions within `{...}` blocks
+- String concatenation support in expressions using `+` operator
+- Conditional text display using ternary operators: `{health > 0 ? health + 'hp' : 'DEAD'}`
+- Computed expressions in templates: `{30 + (level - 1) * 10}hp`
+- Multiple expressions in single template: `"Level {level} - {xp}/{xpMax} XP"`
+- String concatenation in `data-state-compute` for creating computed string attributes
+- Auto-detection of string vs numeric addition (if either operand is string, concatenates)
+
+### Changed
+- `_parseExpression` now handles string concatenation intelligently
+- `updateTextElement` rewritten to parse expressions instead of simple token replacement
+- Expression parser returns strings, numbers, or booleans (not just truthy values)
+- `data-state-text` backward compatible - simple `{attr}` tokens still work
+
+### Technical
+- Modified `parseAddSub` function to detect string types and concatenate accordingly
+- Uses existing expression parser infrastructure (no new dependencies)
+- Zero-dependency string operations
+
+### Documentation
+- Added comprehensive Expression-Based Templates section to README
+- Added interactive expression demo to index.html (Extension 5.8)
+- Documented string concatenation syntax and use cases
+- Added examples for game development, dynamic UIs, and form validation
+- Clarified that this solves CSS `content` property limitations (cannot use `calc()` or concatenate)
+
+### Why v1.6.0?
+- New capability: expression-based templates fundamentally extends what you can do with `data-state-text`
+- Backward compatible: existing simple token syntax `{attr}` still works
+- Solves CSS limitations that were previously impossible to work around
+- Blade-like feel without custom HTML elements (stays true to attribute-based philosophy)
+
 ## [1.5.1] - 2025-01-XX
 
 ### Added
