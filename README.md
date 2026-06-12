@@ -1953,6 +1953,157 @@ Instance management uses `DOMParser` for secure element cloning (same as v1.4.2 
 - ✅ CSP compliant
 - ✅ Zero external dependencies
 
+### Reading Element Values at Instantiate Time (v1.6.1)
+
+**The final piece for zero-JavaScript apps** - Read values from form inputs or any element at trigger-time.
+
+Use `data-state-set-*-from` to capture user input when cloning, enabling fully declarative forms without any JavaScript.
+
+#### Basic Usage
+
+```html
+<!-- Text input → clone -->
+<input id="taskName" placeholder="Enter task name">
+<button data-state-trigger
+        data-state-instantiate="task-tpl"
+        data-state-set-label-from="#taskName">
+    Add Task
+</button>
+
+<!-- Template uses the captured value -->
+<div id="task-tpl" data-state data-label="New task" style="display:none">
+    <span data-state-display="label">New task</span>
+</div>
+```
+
+**How it works:**
+1. User types in `#taskName` input
+2. Click triggers instantiate
+3. State.js reads `input.value` at click-time
+4. Sets `data-label` on the clone with the input's current value
+5. Template displays the user's text - no JavaScript required!
+
+#### Supported Elements
+
+**The `-from` attribute works with any element:**
+
+- **`<input>`** - Reads `.value` property
+- **`<textarea>`** - Reads `.value` property
+- **`<select>`** - Reads `.value` property (selected option)
+- **Contenteditable** - Reads `.textContent` property
+- **Any element** - Falls back to `.textContent`
+
+#### Multiple Inputs Example
+
+```html
+<input id="expenseName" placeholder="Description">
+<input id="expenseAmount" type="number" placeholder="Amount">
+<select id="expenseCategory">
+    <option value="food">Food</option>
+    <option value="transport">Transport</option>
+</select>
+
+<button data-state-trigger
+        data-state-instantiate="expense-tpl"
+        data-state-set-label-from="#expenseName"
+        data-state-set-amount-from="#expenseAmount"
+        data-state-set-category-from="#expenseCategory">
+    Add Expense
+</button>
+```
+
+#### Complex Selectors
+
+**Full CSS selector support** - not limited to IDs:
+
+```html
+<!-- Class selector -->
+<button data-state-set-value-from=".active-input">
+
+<!-- Attribute selector -->
+<button data-state-set-name-from="input[name='username']">
+
+<!-- Complex selector -->
+<button data-state-set-text-from=".form-active .description-field">
+
+<!-- Descendant selector -->
+<button data-state-set-content-from="#panel textarea">
+```
+
+#### Combining Static and Dynamic Values
+
+You can combine static fallbacks with dynamic `-from` values:
+
+```html
+<!-- If input is empty or not found, uses "Default Task" -->
+<button data-state-set-label="Default Task"
+        data-state-set-label-from="#taskInput">
+```
+
+**Priority:** `-from` takes precedence if the element is found and has a value.
+
+#### Real-World Example: Budget Tracker
+
+**Before v1.6.1 (required JavaScript):**
+```html
+<input id="incomeName">
+<button id="addBtn" data-state-instantiate="entry-tpl">Add</button>
+
+<script>
+// JS needed to read input value
+addBtn.addEventListener('mousedown', () => {
+    addBtn.setAttribute('data-state-set-label',
+        document.getElementById('incomeName').value);
+});
+</script>
+```
+
+**After v1.6.1 (zero JavaScript):**
+```html
+<input id="incomeName">
+<button data-state-trigger
+        data-state-instantiate="entry-tpl"
+        data-state-set-label-from="#incomeName">
+    Add
+</button>
+```
+
+**Result:** The 15 lines of JavaScript are eliminated entirely. Pure declarative forms.
+
+#### Contenteditable Support
+
+Works with rich text editors:
+
+```html
+<div contenteditable id="noteEditor">
+    Type your <b>formatted</b> note here
+</div>
+
+<button data-state-trigger
+        data-state-instantiate="note-tpl"
+        data-state-set-content-from="#noteEditor">
+    Save Note
+</button>
+```
+
+#### Edge Cases
+
+**Element not found:**
+- Treated as empty string
+- Instantiate continues normally
+- Clone gets empty value for that attribute
+
+**Empty input value:**
+- Sets empty string on clone: `data-label=""`
+- Does not fall back to static value
+- `-from` always wins when element exists
+
+**Should State.js clear the input after adding?**
+- No - that's a UX decision that varies by use case
+- Some apps clear (budget demo style)
+- Some apps keep value (edit mode style)
+- Use trigger chains to reset if needed: `data-state-trigger-chain="addEntry,clearInput"`
+
 ### Configuration
 
 | Attribute | Description | Example |

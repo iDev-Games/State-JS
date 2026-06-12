@@ -1,4 +1,4 @@
-/* State.js v1.6.0 by iDev Games */
+/* State.js v1.6.1 by iDev Games */
 class State
 {
     states = [];
@@ -748,9 +748,14 @@ class State
         const counter = (this.instanceCounter.get(sourceId) || 0) + 1;
         this.instanceCounter.set(sourceId, counter);
 
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(sourceElement.outerHTML, 'text/html');
-        const clonedElement = doc.body.firstElementChild;
+        let clonedElement;
+        if (sourceElement.tagName === 'TEMPLATE') {
+            clonedElement = sourceElement.content.firstElementChild.cloneNode(true);
+        } else {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(sourceElement.outerHTML, 'text/html');
+            clonedElement = doc.body.firstElementChild;
+        }
 
         if (!clonedElement) {
             console.warn(`State.js: Failed to clone element #${sourceId}`);
@@ -765,17 +770,39 @@ class State
         }
 
         const attributes = triggerElement.attributes;
+        const setValues = new Map();
+
         for (let i = 0; i < attributes.length; i++) {
             const attr = attributes[i];
-            if (attr.name.startsWith('data-state-set-')) {
+
+            if (attr.name.startsWith('data-state-set-') && attr.name.endsWith('-from')) {
+                const attrName = attr.name.replace('data-state-set-', '').replace('-from', '');
+                const selector = attr.value;
+
+                const sourceElement = document.querySelector(selector);
+                if (sourceElement) {
+                    const value = sourceElement.value !== undefined
+                        ? sourceElement.value
+                        : sourceElement.textContent || '';
+                    setValues.set(attrName, value);
+                }
+            }
+
+            else if (attr.name.startsWith('data-state-set-')) {
                 const attrName = attr.name.replace('data-state-set-', '');
-                if (attrName === 'class') {
-                    clonedElement.className = attr.value;
-                } else {
-                    clonedElement.setAttribute(`data-${attrName}`, attr.value);
+                if (!setValues.has(attrName)) {
+                    setValues.set(attrName, attr.value);
                 }
             }
         }
+
+        setValues.forEach((value, attrName) => {
+            if (attrName === 'class') {
+                clonedElement.className = value;
+            } else {
+                clonedElement.setAttribute(`data-${attrName}`, value);
+            }
+        });
 
         if (insertMode === 'prepend') {
             targetElement.insertBefore(clonedElement, targetElement.firstChild);
@@ -791,12 +818,26 @@ class State
         sourceElement.setAttribute(countAttr, String(counter));
 
         this.setupElement(clonedElement);
+
+        const childTriggers = clonedElement.querySelectorAll('[data-state-trigger]');
+        childTriggers.forEach(trigger => {
+            this.setupTriggerElement(trigger);
+        });
     }
 
     handleRemove(triggerElement, removeId) {
         const condition = triggerElement.getAttribute('data-state-condition');
 
-        if (removeId.startsWith('.') || removeId.includes('[')) {
+        if (removeId === 'self') {
+            if (!condition || this.evaluateCondition(condition, triggerElement)) {
+                triggerElement.remove();
+            }
+        } else if (removeId === 'parent') {
+            const parent = triggerElement.parentElement;
+            if (parent && (!condition || this.evaluateCondition(condition, parent))) {
+                parent.remove();
+            }
+        } else if (removeId.startsWith('.') || removeId.includes('[')) {
             const elements = document.querySelectorAll(removeId);
             elements.forEach(element => {
                 if (condition) {

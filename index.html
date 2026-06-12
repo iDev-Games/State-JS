@@ -423,7 +423,7 @@
 
                     <hr id="headerLine" />
 
-                    <h2 id="documentation">Documentation <sup>v1.6.0</sup></h2>
+                    <h2 id="documentation">Documentation <sup>v1.6.1</sup></h2>
                 </div>
             </div>
 
@@ -2002,6 +2002,144 @@ State.trace('hp', true)</pre>
                             Expression templates solve this with syntax - computed values, string concatenation, and conditional logic
                             all in declarative HTML attributes. Perfect for game UIs, dynamic dashboards, and any scenario where you need
                             computed display text!
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <hr/>
+
+            <div class="container alignCenter background6" data-state data-state-var="true">
+                <div class="box boxBG title">
+                    <h2>Extension 5.9: Reading Element Values at Instantiate Time (v1.6.1)</h2>
+                </div>
+                <div class="box boxBG fadeIn" data-state>
+                    <p>
+                        <strong style="color: #34d399;">New in v1.6.1:</strong>
+                        Read values from text inputs, selects, and other elements at click-time when cloning templates - enabling zero-JavaScript forms and data entry!
+                    </p>
+
+                    <h3 style="margin-top: 30px; color: #fff;">Live Demo: Task List (Zero JavaScript)</h3>
+
+                    <div id="from-demo" style="padding: 20px; background: rgba(0,0,0,0.3); border-radius: 8px; margin: 20px 0;">
+
+                        <div style="display: grid; grid-template-columns: 1fr auto; gap: 10px; margin-bottom: 20px; align-items: center;">
+                            <input id="taskInput"
+                                   type="text"
+                                   placeholder="Enter task name..."
+                                   style="padding: 12px; background: rgba(255,255,255,0.1); border: 2px solid #6495ed; border-radius: 4px; color: white; font-size: 16px;">
+
+                            <button data-state-trigger
+                                    data-state-instantiate="task-tpl"
+                                    data-state-target="#task-list"
+                                    data-state-set-label-from="#taskInput"
+                                    style="padding: 12px 24px; background: #6495ed; border: none; border-radius: 4px; color: white; cursor: pointer; font-size: 16px; font-weight: bold;">
+                                Add Task
+                            </button>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr auto auto; gap: 10px; margin-bottom: 20px; align-items: center;">
+                            <input id="budgetDesc"
+                                   type="text"
+                                   placeholder="Item description..."
+                                   style="padding: 12px; background: rgba(255,255,255,0.1); border: 2px solid #51cf66; border-radius: 4px; color: white; font-size: 16px;">
+
+                            <select id="budgetCat" style="padding: 12px; background: rgba(255,255,255,0.1); border: 2px solid #51cf66; border-radius: 4px; color: white; font-size: 16px;">
+                                <option value="food">Food</option>
+                                <option value="transport">Transport</option>
+                                <option value="entertainment">Entertainment</option>
+                            </select>
+
+                            <button data-state-trigger
+                                    data-state-instantiate="budget-tpl"
+                                    data-state-target="#task-list"
+                                    data-state-set-desc-from="#budgetDesc"
+                                    data-state-set-category-from="#budgetCat"
+                                    style="padding: 12px 24px; background: #51cf66; border: none; border-radius: 4px; color: white; cursor: pointer; font-size: 16px; font-weight: bold;">
+                                Add Item
+                            </button>
+                        </div>
+
+                        <div id="task-list" style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">
+                            <template id="task-tpl">
+                                <div data-state data-state-watch="label" style="padding: 15px; background: rgba(100,149,237,0.2); border: 2px solid #6495ed; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                                    <span data-state-display="label" style="color: #6495ed; font-weight: bold;">New Task</span>
+                                    <button data-state-trigger
+                                            data-state-remove="parent"
+                                            style="padding: 6px 12px; background: #ff6b6b; border: none; border-radius: 4px; color: white; cursor: pointer;">
+                                        Remove
+                                    </button>
+                                </div>
+                            </template>
+
+                            <template id="budget-tpl">
+                                <div data-state data-state-watch="desc,category" style="padding: 15px; background: rgba(81,207,102,0.2); border: 2px solid #51cf66; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <span data-state-display="desc" style="color: #51cf66; font-weight: bold;">Budget Item</span>
+                                        <span style="color: #999; margin-left: 10px; font-size: 14px;">(<span data-state-display="category">food</span>)</span>
+                                    </div>
+                                    <button data-state-trigger
+                                            data-state-remove="parent"
+                                            style="padding: 6px 12px; background: #ff6b6b; border: none; border-radius: 4px; color: white; cursor: pointer;">
+                                        Remove
+                                    </button>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 30px; color: #fff;">Code Example:</h3>
+                    <div class="code-box">
+                        <pre>&lt;!-- Text input --&gt;
+&lt;input id="taskInput" type="text" placeholder="Enter task..."&gt;
+
+&lt;!-- Button reads input value at click-time --&gt;
+&lt;button data-state-trigger
+        data-state-instantiate="task-tpl"
+        data-state-set-label-from="#taskInput"&gt;
+    Add Task
+&lt;/button&gt;
+
+&lt;!-- Multiple inputs --&gt;
+&lt;input id="desc" type="text"&gt;
+&lt;select id="category"&gt;
+    &lt;option value="food"&gt;Food&lt;/option&gt;
+&lt;/select&gt;
+
+&lt;button data-state-trigger
+        data-state-instantiate="item-tpl"
+        data-state-set-desc-from="#desc"
+        data-state-set-category-from="#category"&gt;
+    Add Item
+&lt;/button&gt;
+
+&lt;!-- Template --&gt;
+&lt;template id="task-tpl"&gt;
+    &lt;div&gt;
+        &lt;span data-label&gt;Default&lt;/span&gt;
+    &lt;/div&gt;
+&lt;/template&gt;</pre>
+                    </div>
+
+                    <div style="margin-top: 30px; padding: 20px; background: rgba(100,149,237,0.1); border-radius: 8px; border: 2px solid #6495ed;">
+                        <h4 style="color: #6495ed; margin-bottom: 15px;">How It Works:</h4>
+                        <ul style="color: #ccc; margin-left: 20px; line-height: 1.8;">
+                            <li><strong>-from Suffix:</strong> <code>data-state-set-label-from="#input"</code> reads from selector at click-time</li>
+                            <li><strong>CSS Selectors:</strong> Full <code>querySelector</code> support - IDs, classes, complex selectors</li>
+                            <li><strong>Value Resolution:</strong> Reads <code>.value</code> for inputs/selects, <code>.textContent</code> for others</li>
+                            <li><strong>Multiple Inputs:</strong> Use multiple <code>-from</code> attributes to read from different sources</li>
+                            <li><strong>Zero JavaScript:</strong> Enables fully declarative forms and data entry UIs</li>
+                            <li><strong>Override Priority:</strong> <code>-from</code> takes precedence over static <code>data-state-set-*</code></li>
+                            <li><strong>Works With:</strong> <code>&lt;input&gt;</code>, <code>&lt;textarea&gt;</code>, <code>&lt;select&gt;</code>, <code>contenteditable</code></li>
+                        </ul>
+                    </div>
+
+                    <div style="margin-top: 30px; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                        <strong style="color: #6495ed;">Real-World Use Cases:</strong>
+                        <p style="color: #ccc; margin: 10px 0;">
+                            Perfect for task lists, budget trackers, shopping carts, form builders, note-taking apps, and any interface
+                            where users input data that needs to be cloned into templates. Eliminates the need for JavaScript event handlers
+                            to read input values - State.js handles it declaratively at trigger-time.
                         </p>
                     </div>
                 </div>

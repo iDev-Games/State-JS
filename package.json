@@ -1,6 +1,6 @@
 {
   "name": "@idevgames/state-js",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "description": "State.js is a CSS reactive framework that makes UI state and updates flow through CSS instead of JavaScript logic, enabling data driven animations and reactive UIs. Build dynamic, interactive interfaces using pure CSS and HTML.",
   "main": "src/state.js",
   "repository": {

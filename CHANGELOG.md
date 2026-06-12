@@ -5,7 +5,54 @@ All notable changes to State.js will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.6.0] - 2025-01-XX
+## [1.6.1]
+
+### Added
+- **Reading Element Values at Instantiate Time**: New `data-state-set-*-from` attribute pattern for capturing input values at trigger-time
+- New `-from` suffix for `data-state-set-*` attributes that reads values from elements when instantiate triggers
+- Full CSS selector support via `querySelector` for element references
+- Value resolution: reads `.value` for form elements (input, textarea, select), `.textContent` for others
+- Support for contenteditable elements as value sources
+- Multiple `-from` attributes on single trigger for reading from different inputs
+- **Template Element Support**: `data-state-instantiate` now properly clones `<template>` elements using `.content`
+- **Self/Parent Remove Keywords**: `data-state-remove="self"` and `data-state-remove="parent"` for easier element removal
+
+### Changed
+- Modified `handleInstantiate` method to process `-from` attributes before static attributes
+- `-from` attributes take precedence over static `data-state-set-*` when both present
+- Uses Map-based collection to ensure proper priority handling
+- `handleInstantiate` detects `<template>` tags and uses `.content.firstElementChild.cloneNode(true)`
+- `handleRemove` now supports "self" and "parent" keywords in addition to CSS selectors and IDs
+- Child trigger elements inside cloned instances are now automatically set up with event handlers
+
+### Fixed
+- Fixed bug where `data-state-text` elements weren't discovered during initialization
+- Added `[data-state-text]` to selector query in `stateInit` method
+- Fixed template element cloning - `<template>` tags now clone correctly
+- Fixed child triggers not being initialized after instantiate - now queries and sets up all `[data-state-trigger]` descendants
+
+### Technical
+- Map-based attribute collection ensures `-from` overrides static values
+- Selector evaluation at trigger-time (not page load) enables runtime value capture
+- Zero JavaScript required for form-based instantiate operations
+- No new dependencies - uses native `querySelector`, `.value`, and `.textContent`
+- Template detection via `sourceElement.tagName === 'TEMPLATE'` check
+- Child trigger setup via `querySelectorAll('[data-state-trigger]')` after clone insertion
+
+### Documentation
+- Added comprehensive "Reading Element Values at Instantiate Time" section to README
+- Added interactive demo to index.html (Extension 5.9)
+- Documented value resolution priority and edge cases
+- Real-world examples: task lists, budget trackers, form builders
+- Before/after comparison showing JavaScript elimination
+
+### Why v1.6.1?
+- Minor version bump: additive, non-breaking change
+- Completes the instantiate pattern by enabling runtime value capture
+- Enables genuinely zero-JavaScript applications (task lists, forms, data entry UIs)
+- Natural extension of existing `data-state-set-*` pattern with intuitive `-from` suffix
+
+## [1.6.0]
 
 ### Added
 - **Expression-Based Templates**: Blade-like templating with computed values, string concatenation, and conditional logic
@@ -41,7 +88,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Solves CSS limitations that were previously impossible to work around
 - Blade-like feel without custom HTML elements (stays true to attribute-based philosophy)
 
-## [1.5.1] - 2025-01-XX
+## [1.5.1]
 
 ### Added
 - **Random Number Generation**: Generate random numbers declaratively for game development
@@ -66,7 +113,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Updated version to v1.5.1 across all files
 
-## [1.5.0] - 2025-01-XX
+## [1.5.0]
 
 ### Added
 - **Instance Management System**: Dynamically create and remove DOM elements using declarative triggers
@@ -89,7 +136,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated documentation with comprehensive instance management examples
 - Added interactive demo in index.html showcasing enemy spawner system
 
-## [1.4.2] - 2025-01-XX
+## [1.4.2]
 
 ### Security
 - **BREAKING**: External file fetches (`data-state-include="path.html"`) are now **disabled by default** to prevent DOM-based XSS attacks
@@ -108,7 +155,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - External HTML includes now require explicit opt-in for security
 - Updated documentation with security best practices
 
-## [1.4.1] - 2025-01-XX
+## [1.4.1]
 
 ### Security
 - Fixed Content Security Policy (CSP) compatibility by removing `eval()` usage
@@ -119,7 +166,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Refactored condition evaluation to use tokenizer/parser instead of `eval()`
 - Improved expression parsing with support for ternary operators, logical operators, and arithmetic
 
-## [1.4.0] - 2025-01-XX
+## [1.4.0]
 
 ### Added
 - **Event-Based Triggers**: Triggers can now fire on any DOM event, not just clicks
@@ -134,7 +181,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated documentation with event-based trigger examples
 - Added interactive event trigger demo to index.html
 
-## [1.3.5] - 2024-XX-XX
+## [1.3.5]
 
 ### Fixed
 - Fixed interval triggers with conditions for turn-based combat systems
@@ -146,43 +193,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - All toggle attribute names now converted to lowercase for consistency
 
-## [1.3.4] - 2024-XX-XX
+## [1.3.4]
 
 ### Fixed
 - Restructured interval scheduler to check conditions every tick instead of only when interval elapsed
 - Intervals now count from when they're eligible instead of page load
 
-## [1.3.3] - 2024-XX-XX
+## [1.3.3]
 
 ### Fixed
 - Initialize `lastConditionState` by evaluating the condition at setup time instead of hardcoding to false
 - Prevents incorrect condition transition detection
 
-## [1.3.2] - 2024-XX-XX
+## [1.3.2]
 
 ### Fixed
 - Fixed timer reset bug in interval triggers - only reset `lastFire` when trigger actually fires
 
-## [1.3.1] - 2024-XX-XX
+## [1.3.1]
 
 ### Fixed
 - Fixed computed state expression parsing breaking on comparison operators (`<=`, `>=`, `==`, `!=`)
 - Changed from `split('=')` to `indexOf('=')` + `substring()` to only split on first `=`
 
-## [1.3.0] - 2024-XX-XX
+## [1.3.0]
 
 ### Added
 - **Computed State**: `data-state-compute` for automatic derived value calculations
 - **Debug API**: `State.inspect()`, `State.inspectAll()`, and `State.trace()` for debugging
 
-## [1.2.0] - 2024-XX-XX
+## [1.2.0]
 
 ### Added
 - **HTML Includes**: `data-state-include` for component-based development
 - Template-based includes (`#id`) for instant, zero-latency components
 - External file includes with caching
 
-## [1.1.0] - 2024-XX-XX
+## [1.1.0]
 
 ### Added
 - **Interval Triggers**: `data-state-interval` for repeating timer-based triggers
@@ -193,7 +240,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **localStorage Persistence**: `data-state-persist` for save/restore
 - **Custom Events**: `data-state-event` to dispatch CustomEvents
 
-## [1.0.0] - 2024-XX-XX
+## [1.0.0]
 
 ### Added
 - Initial release
