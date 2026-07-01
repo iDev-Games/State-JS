@@ -1,0 +1,137 @@
+<html>
+    <head>
+        <title>State.js CSS Reactive Framework</title>
+        <script src="src/state.js"></script>
+
+        <!-- Google Fonts -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+        <!--End Fonts -->
+
+        <!-- Mobile viewport meta tag -->
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+        <style>
+            html, body{
+                margin:0px;
+                padding:0px;
+            }
+            body{
+                background-color:#060606;
+                color:#FFF;
+                font-family: 'Space Mono', monospace;
+            }
+            .container{
+                width:100%;
+                max-width:1280px;
+                margin:auto;
+            }
+            .sidebar{
+                max-width:200px;
+                position:absolute;
+                top:0px;
+                left:0px;
+                height:100%;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+            }
+            ul.menu{
+                list-style: none;
+                padding:0px;
+            }
+            ul.menu li{
+                margin:0px;
+                padding:20px;
+            }
+            .menu-item{
+                color:#FFF;
+            }
+            .menu-item:hover{
+                color:#060606;
+                cursor: pointer;
+                background-color: #b1b1b1;
+            }
+            .menu-item:after{
+                content:"";
+                position:absolute;
+                background: #000;
+                height:4px;
+                top:80px;
+                left:0px;
+                width:80%;
+            }
+            /* SECTIONS */
+            .section { 
+                display: none; 
+            }
+            #app[data-section="1"] .welcome  { 
+                display: block; 
+            }
+            #app[data-section="2"] .gettingStarted  { 
+                display: block; 
+            }
+            #app[data-section="3"] .examples  { 
+                display: block; 
+            }
+            /*END SECTIONS */
+        </style>
+    </head>
+    <body>
+
+        <div id="app"
+                data-state
+                data-state-watch="section"
+                data-section="1">
+
+            <div class="sidebar">
+
+                <ul class="menu">
+                    <li class="menu-item"
+                        data-state 
+                        data-state-trigger 
+                        data-state-bind="app"
+                        data-state-attr="section" 
+                        data-state-value="1">
+                        HOME
+                    </li>
+                    <li class="menu-item"
+                        data-state 
+                        data-state-trigger 
+                        data-state-bind="app"
+                        data-state-attr="section" 
+                        data-state-value="2">
+                        GETTING STARTED
+                    </li>
+                    <li class="menu-item"
+                        data-state 
+                        data-state-trigger 
+                        data-state-bind="app"
+                        data-state-attr="section" 
+                        data-state-value="3">
+                        EXAMPLES
+                    </li>
+                </ul>
+
+            </div>
+
+            <div class="body">
+
+                <div class="section welcome">
+                    Test
+                </div>
+                <div class="section gettingStarted">
+                    test2
+                </div>
+                <div class="section examples">
+                    test3
+                </div>
+
+            </div>
+
+        </div>
+
+    </body>
+</html>

@@ -1,4 +1,4 @@
-/* State.js v1.6.2 by iDev Games */
+/* State.js v1.6.3 by iDev Games */
 class State
 {
     states = [];
@@ -158,7 +158,8 @@ class State
             if (val === 'false') return false;
             if (val === 'null')  return null;
             const num = Number(val);
-            return isNaN(num) ? val : num;
+            const isFullyNumeric = !isNaN(num) && String(num) === val.trim();
+            return isFullyNumeric ? num : val;
         };
 
         function parseExpr() { return parseTernary(); }
@@ -820,9 +821,12 @@ class State
 
         this.setupElement(clonedElement);
 
-        const childTriggers = clonedElement.querySelectorAll('[data-state-trigger]');
-        childTriggers.forEach(trigger => {
-            this.setupTriggerElement(trigger);
+        const nestedStateElements = clonedElement.querySelectorAll(
+            '[data-state-trigger],[data-state-interval],[data-state-text],' +
+            '[data-state-class],[data-state-persist],[data-state-compute]'
+        );
+        nestedStateElements.forEach(child => {
+            this.setupElement(child);
         });
     }
 
@@ -990,7 +994,7 @@ class State
         if (attrs === null) {
             attrs = Array.from(element.attributes)
                 .map(a => a.name)
-                .filter(name => name.startsWith('data-'))
+                .filter(name => name.startsWith('data-') && !name.startsWith('data-state-'))
                 .map(name => name.replace('data-', ''));
         }
 
@@ -1001,11 +1005,12 @@ class State
 
             if (value !== null) {
                 const numValue = parseFloat(value);
-                if (!isNaN(numValue)) {
+                const isFullyNumeric = !isNaN(numValue) && String(numValue) === value.trim();
+                if (isFullyNumeric) {
                     value = numValue;
                 }
-                styleTarget.setProperty(`--state-${attr}${idSuffix}`, isNaN(numValue) ? value : numValue);
-                if (!isNaN(numValue)) {
+                styleTarget.setProperty(`--state-${attr}${idSuffix}`, isFullyNumeric ? numValue : value);
+                if (isFullyNumeric) {
                     const min = parseFloat(element.getAttribute(`data-${attr}-min`) || '0');
                     const max = parseFloat(element.getAttribute(`data-${attr}-max`) || '100');
                     const percent = ((numValue - min) / (max - min)) * 100;

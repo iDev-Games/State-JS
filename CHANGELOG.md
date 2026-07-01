@@ -5,6 +5,30 @@ All notable changes to State.js will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.3]
+
+### Fixed
+- Fixed infinite attribute prefix layering in `updateWatchedVars()` when `data-state-watch` is not explicitly set
+- Fixed `parseFloat()` truncating string values starting with digits (e.g., "1year" displaying as "1")
+- Fixed nested state attributes not being initialized in cloned templates
+
+### Changed
+- Auto-derived watch list now excludes `data-state-*` attributes to prevent self-feeding loops
+- Numeric coercion now validates entire string is numeric before treating as number
+- Nested element initialization in `handleInstantiate()` now covers all state-bearing attributes, not just triggers
+
+### Technical
+- `updateWatchedVars()` filter changed to `.filter(name => name.startsWith('data-') && !name.startsWith('data-state-'))`
+- Added `isFullyNumeric` check: `!isNaN(numValue) && String(numValue) === value.trim()`
+- Nested selector now includes: `data-state-trigger`, `data-state-interval`, `data-state-text`, `data-state-class`, `data-state-persist`, `data-state-compute`
+
+### Why v1.6.3?
+- Patch version bump: critical bug fixes only, no new features
+- Prevents production attribute explosion issue
+- Fixes data corruption for mixed alphanumeric values
+- Enables nested reactive elements in templates
+- Maintains full backward compatibility with v1.6.2
+
 ## [1.6.2]
 
 ### Fixed
